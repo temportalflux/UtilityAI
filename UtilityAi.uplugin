@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UtilityAi",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "Dustin Yost",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UtilityAi",
+			"Type": "Developer",
+			"LoadingPhase": "Default"
+		}
+	]
+}
