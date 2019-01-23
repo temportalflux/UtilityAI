@@ -1,0 +1,3 @@
+[submodule "Plugins/UtilityAI"]
+	path = Plugins/UtilityAI
+	url = git@github.com:temportalflux/UtilityAI.git
