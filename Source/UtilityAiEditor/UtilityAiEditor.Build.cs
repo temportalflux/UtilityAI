@@ -45,8 +45,10 @@ public class UtilityAiEditor : ModuleRules
             new string[]
             {
 				// ... add private dependencies that you statically link with here ...
-				"Core",
+                "Projects",
+                "Core",
                 "CoreUObject",
+                "LevelEditor",
                 "ApplicationCore",
                 "Engine",
                 "RenderCore",

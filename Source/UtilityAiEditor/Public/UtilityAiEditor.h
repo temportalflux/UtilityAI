@@ -4,18 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
-#include "MultiBoxExtender.h"
-#include "MultiBoxBuilder.h"
+
+class FToolBarBuilder;
+class FMenuBuilder;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUtilityAiEditor, Log, All);
 
 class FUtilityAiEditorModule : public IModuleInterface
 {
 private:
-	TSharedPtr<FExtender> mpBTToolbarExtender;
-	TSharedPtr<const FExtensionBase> mpBTToolbarExtensionUtility;
+	TSharedPtr<class FExtender> mpBTMenuExtender;
+	TSharedPtr<class FExtender> mpBTToolbarExtender;
+	TSharedPtr<class FUICommandList> ToolbarCommands;
 
 	void AddBTEditorToolbarExtension(FToolBarBuilder& Builder);
+	void AddMenuExtension(FMenuBuilder& Builder);
+
+	/** This function will be bound to Command. */
+	void PluginButtonClicked();
 
 public:
 
