@@ -16,6 +16,7 @@
 #include "SlateApplication.h"
 #include "DetailLayoutBuilder.h"
 
+#include "UtilityTreeWizard.h"
 #include "BehaviorTreeEditorModule.h"
 
 DEFINE_LOG_CATEGORY(LogUtilityAiEditor);
@@ -33,10 +34,11 @@ void FUtilityAiEditorModule::StartupModule()
 	FToolbarCommands::Register();
 
 	ToolbarCommands = MakeShareable(new FUICommandList);
+	mpUtilityTreeWizard = MakeShareable(new UtilityTreeWizard());
 
 	ToolbarCommands->MapAction(
 		FToolbarCommands::Get().Action_UtilityTree_OpenWizard,
-		FExecuteAction::CreateRaw(this, &FUtilityAiEditorModule::PluginButtonClicked),
+		FExecuteAction::CreateRaw(mpUtilityTreeWizard.Get(), &UtilityTreeWizard::Open),
 		FCanExecuteAction()
 	);
 
@@ -70,91 +72,6 @@ void FUtilityAiEditorModule::ShutdownModule()
 	FToolbarStyle::Shutdown();
 	FToolbarCommands::Unregister();
 	
-}
-
-void OpenWindow(TSharedRef<SWindow> window)
-{
-	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
-
-	if (MainFrameModule.GetParentWindow().IsValid())
-	{
-		FSlateApplication::Get().AddWindowAsNativeChild(window, MainFrameModule.GetParentWindow().ToSharedRef());
-	}
-	else
-	{
-		FSlateApplication::Get().AddWindow(window);
-	}
-}
-
-void FUtilityAiEditorModule::PluginButtonClicked()
-{
-	CurrentItem = MakeShareable(new FComboTest{ LOCTEXT("CreateNew", "New Blackboard Key") });
-	Options.Add(CurrentItem);
-	Options.Add(MakeShareable(new FComboTest{ LOCTEXT("A", "A") }));
-
-	OpenWindow(
-		SNew(SWindow)
-			.Title(FText::FromString(TEXT("Create Utility Tree")))
-			.ClientSize(FVector2D(800, 400))
-			.SupportsMaximize(false)
-			.SupportsMinimize(false)
-			[
-				SNew(SVerticalBox)
-				+SVerticalBox::Slot()
-					.HAlign(HAlign_Left)
-					.VAlign(VAlign_Top)
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(TEXT("Create Action")))
-					]
-				+SVerticalBox::Slot()
-					.HAlign(HAlign_Left)
-					.VAlign(VAlign_Top)
-					[
-						SNew(SButton)
-						.Text(FText::FromString(TEXT("This is a button")))
-					]
-				+ SVerticalBox::Slot()
-					.HAlign(HAlign_Left)
-					.VAlign(VAlign_Top)
-					[
-						SNew(SComboBox<TSharedPtr<FComboTest>>)
-							.OptionsSource(&Options)
-							.OnSelectionChanged_Lambda([&](TSharedPtr<FComboTest> Item, ESelectInfo::Type){
-								CurrentItem = Item;
-								UpdateProperty();
-							})
-							.OnGenerateWidget_Lambda([&](TSharedPtr<FComboTest> Item){
-								return SNew(STextBlock)
-									.Font(IDetailLayoutBuilder::GetDetailFont())
-									.Text(Item->Label);
-							})
-							.InitiallySelectedItem(CurrentItem)
-							[
-								SAssignNew(CurrentText, STextBlock)
-									.Font(IDetailLayoutBuilder::GetDetailFont())
-									.Text(CurrentItem->Label)
-							]
-					]
-			]
-	);
-}
-
-void FUtilityAiEditorModule::UpdateProperty()
-{
-	if (CurrentItem == Options.Last())
-	{
-		// Show custom loop entry
-		//LoopEntry->SetVisibility(EVisibility::Visible);
-	}
-	else
-	{
-		// Hide custom loop entry
-		//LoopEntry->SetVisibility(EVisibility::Collapsed);
-	}
-
-	//LoopCountProperty->SetValue(CurrentItem->Value);
-	CurrentText->SetText(CurrentItem->Label);
 }
 
 #undef LOCTEXT_NAMESPACE

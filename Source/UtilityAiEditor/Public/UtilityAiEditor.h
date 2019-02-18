@@ -20,13 +20,7 @@ class FUtilityAiEditorModule : public IModuleInterface
 private:
 	TSharedPtr<class FExtender> mpBTMenuExtender;
 	TSharedPtr<class FUICommandList> ToolbarCommands;
-	TArray<TSharedPtr< FComboTest>> Options;
-	TSharedPtr<FComboTest> CurrentItem;
-	TSharedPtr<STextBlock> CurrentText;
-
-	/** This function will be bound to Command. */
-	void PluginButtonClicked();
-	void UpdateProperty();
+	TSharedPtr<class UtilityTreeWizard> mpUtilityTreeWizard;
 
 public:
 
