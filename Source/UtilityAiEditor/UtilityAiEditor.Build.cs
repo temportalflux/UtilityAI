@@ -69,6 +69,7 @@ public class UtilityAiEditor : ModuleRules
                 "AIModule",
                 "ClassViewer",
                 "BehaviorTreeEditor",
+                "MainFrame",
             }
             );
 

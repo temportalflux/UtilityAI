@@ -5,7 +5,13 @@
 #include "ToolbarStyle.h"
 #include "ToolbarCommands.h"
 #include "Misc/MessageDialog.h"
+
+#include "Widgets/Docking/SDockTab.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "IMainFrameModule.h"
+#include "SlateApplication.h"
 
 #include "BehaviorTreeEditorModule.h"
 
@@ -56,6 +62,7 @@ void FUtilityAiEditorModule::StartupModule()
 		);
 		BTEditorModule.GetMenuExtensibilityManager()->AddExtender(this->mpBTMenuExtender);
 	}
+
 }
 
 void FUtilityAiEditorModule::ShutdownModule()
@@ -92,12 +99,39 @@ void FUtilityAiEditorModule::AddMenuExtension(FMenuBuilder& Builder)
 void FUtilityAiEditorModule::PluginButtonClicked()
 {
 	// Put your "OnButtonClicked" stuff here
+	/*
 	FText DialogText = FText::Format(
 		LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
 		FText::FromString(TEXT("FUtilityAiEditorModule::PluginButtonClicked()")),
 		FText::FromString(TEXT("UtilityAiEditor.cpp"))
 	);
 	FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+	//*/
+	TSharedRef<SWindow> CookbookWindow = SNew(SWindow)
+		.Title(FText::FromString(TEXT("Cookbook Window")))
+		.ClientSize(FVector2D(800, 400))
+		.SupportsMaximize(false)
+		.SupportsMinimize(false)
+		[
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(TEXT("Hello from Slate")))
+		]
+	];
+	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+
+	if (MainFrameModule.GetParentWindow().IsValid())
+	{
+		FSlateApplication::Get().AddWindowAsNativeChild(CookbookWindow, MainFrameModule.GetParentWindow().ToSharedRef());
+	}
+	else
+	{
+		FSlateApplication::Get().AddWindow(CookbookWindow);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
