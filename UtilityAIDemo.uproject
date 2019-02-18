@@ -10,14 +10,18 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"Plugins": [
-		{
-			"Name": "UtilityAi",
-			"Enabled": true
-		},
-		{
-			"Name": "ToolbarPlugin",
-			"Enabled": true
-		}
-	]
+  "Plugins": [
+    {
+      "Name": "UtilityAi",
+      "Enabled": true
+    },
+    {
+      "Name": "ToolbarPlugin",
+      "Enabled": true
+    },
+    {
+      "Name": "WindowTest",
+      "Enabled": true
+    }
+  ]
 }
