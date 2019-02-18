@@ -10,18 +10,23 @@ class FMenuBuilder;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUtilityAiEditor, Log, All);
 
+struct FComboTest
+{
+	FText Label;
+};
+
 class FUtilityAiEditorModule : public IModuleInterface
 {
 private:
 	TSharedPtr<class FExtender> mpBTMenuExtender;
-	TSharedPtr<class FExtender> mpBTToolbarExtender;
 	TSharedPtr<class FUICommandList> ToolbarCommands;
-
-	void AddBTEditorToolbarExtension(FToolBarBuilder& Builder);
-	void AddMenuExtension(FMenuBuilder& Builder);
+	TArray<TSharedPtr< FComboTest>> Options;
+	TSharedPtr<FComboTest> CurrentItem;
+	TSharedPtr<STextBlock> CurrentText;
 
 	/** This function will be bound to Command. */
 	void PluginButtonClicked();
+	void UpdateProperty();
 
 public:
 

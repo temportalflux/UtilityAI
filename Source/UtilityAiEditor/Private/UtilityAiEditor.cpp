@@ -9,9 +9,12 @@
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SComboBox.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "IMainFrameModule.h"
 #include "SlateApplication.h"
+#include "DetailLayoutBuilder.h"
 
 #include "BehaviorTreeEditorModule.h"
 
@@ -40,25 +43,15 @@ void FUtilityAiEditorModule::StartupModule()
 	// https://answers.unrealengine.com/questions/25609/customizing-the-editors-toolbar-buttons-menu-via-c.html
 
 	FBehaviorTreeEditorModule& BTEditorModule = FModuleManager::LoadModuleChecked<FBehaviorTreeEditorModule>("BehaviorTreeEditor");
-	///*
-	{
-		this->mpBTToolbarExtender = (TSharedPtr<FExtender>)MakeShareable(new FExtender());
-		this->mpBTToolbarExtender->AddToolBarExtension(
-			"Asset",
-			EExtensionHook::After,
-			ToolbarCommands,
-			FToolBarExtensionDelegate::CreateRaw(this, &FUtilityAiEditorModule::AddBTEditorToolbarExtension)
-		);
-		BTEditorModule.GetToolBarExtensibilityManager()->AddExtender(this->mpBTToolbarExtender);
-	}
-	//*/
 	{
 		this->mpBTMenuExtender = (TSharedPtr<FExtender>)MakeShareable(new FExtender());
 		this->mpBTMenuExtender->AddMenuExtension(
 			"WindowLayout",
 			EExtensionHook::After,
 			ToolbarCommands,
-			FMenuExtensionDelegate::CreateRaw(this, &FUtilityAiEditorModule::AddMenuExtension)
+			FMenuExtensionDelegate::CreateLambda([](FMenuBuilder& Builder) {
+				Builder.AddMenuEntry(FToolbarCommands::Get().Action_UtilityTree_OpenWizard);
+			})
 		);
 		BTEditorModule.GetMenuExtensibilityManager()->AddExtender(this->mpBTMenuExtender);
 	}
@@ -73,65 +66,95 @@ void FUtilityAiEditorModule::ShutdownModule()
 
 	FBehaviorTreeEditorModule& BTEditorModule = FModuleManager::LoadModuleChecked<FBehaviorTreeEditorModule>("BehaviorTreeEditor");
 	BTEditorModule.GetMenuExtensibilityManager()->RemoveExtender(this->mpBTMenuExtender);
-	BTEditorModule.GetToolBarExtensibilityManager()->RemoveExtender(this->mpBTToolbarExtender);
 
 	FToolbarStyle::Shutdown();
 	FToolbarCommands::Unregister();
 	
 }
 
-void FUtilityAiEditorModule::AddBTEditorToolbarExtension(FToolBarBuilder& Builder)
+void OpenWindow(TSharedRef<SWindow> window)
 {
-	UE_LOG(LogUtilityAiEditor, Log, TEXT("BT Utiltiy toolbar button time"));
-	Builder.BeginSection("UtilityAi");
-	{
-		Builder.AddToolBarButton(FToolbarCommands::Get().Action_UtilityTree_OpenWizard);
-	}
-	Builder.EndSection();
-}
-
-void FUtilityAiEditorModule::AddMenuExtension(FMenuBuilder& Builder)
-{
-	UE_LOG(LogUtilityAiEditor, Log, TEXT("BT Utiltiy MENU button time"));
-	Builder.AddMenuEntry(FToolbarCommands::Get().Action_UtilityTree_OpenWizard);
-}
-
-void FUtilityAiEditorModule::PluginButtonClicked()
-{
-	// Put your "OnButtonClicked" stuff here
-	/*
-	FText DialogText = FText::Format(
-		LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
-		FText::FromString(TEXT("FUtilityAiEditorModule::PluginButtonClicked()")),
-		FText::FromString(TEXT("UtilityAiEditor.cpp"))
-	);
-	FMessageDialog::Open(EAppMsgType::Ok, DialogText);
-	//*/
-	TSharedRef<SWindow> CookbookWindow = SNew(SWindow)
-		.Title(FText::FromString(TEXT("Cookbook Window")))
-		.ClientSize(FVector2D(800, 400))
-		.SupportsMaximize(false)
-		.SupportsMinimize(false)
-		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot()
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		[
-			SNew(STextBlock)
-			.Text(FText::FromString(TEXT("Hello from Slate")))
-		]
-	];
 	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
 
 	if (MainFrameModule.GetParentWindow().IsValid())
 	{
-		FSlateApplication::Get().AddWindowAsNativeChild(CookbookWindow, MainFrameModule.GetParentWindow().ToSharedRef());
+		FSlateApplication::Get().AddWindowAsNativeChild(window, MainFrameModule.GetParentWindow().ToSharedRef());
 	}
 	else
 	{
-		FSlateApplication::Get().AddWindow(CookbookWindow);
+		FSlateApplication::Get().AddWindow(window);
 	}
+}
+
+void FUtilityAiEditorModule::PluginButtonClicked()
+{
+	CurrentItem = MakeShareable(new FComboTest{ LOCTEXT("CreateNew", "New Blackboard Key") });
+	Options.Add(CurrentItem);
+	Options.Add(MakeShareable(new FComboTest{ LOCTEXT("A", "A") }));
+
+	OpenWindow(
+		SNew(SWindow)
+			.Title(FText::FromString(TEXT("Create Utility Tree")))
+			.ClientSize(FVector2D(800, 400))
+			.SupportsMaximize(false)
+			.SupportsMinimize(false)
+			[
+				SNew(SVerticalBox)
+				+SVerticalBox::Slot()
+					.HAlign(HAlign_Left)
+					.VAlign(VAlign_Top)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(TEXT("Create Action")))
+					]
+				+SVerticalBox::Slot()
+					.HAlign(HAlign_Left)
+					.VAlign(VAlign_Top)
+					[
+						SNew(SButton)
+						.Text(FText::FromString(TEXT("This is a button")))
+					]
+				+ SVerticalBox::Slot()
+					.HAlign(HAlign_Left)
+					.VAlign(VAlign_Top)
+					[
+						SNew(SComboBox<TSharedPtr<FComboTest>>)
+							.OptionsSource(&Options)
+							.OnSelectionChanged_Lambda([&](TSharedPtr<FComboTest> Item, ESelectInfo::Type){
+								CurrentItem = Item;
+								UpdateProperty();
+							})
+							.OnGenerateWidget_Lambda([&](TSharedPtr<FComboTest> Item){
+								return SNew(STextBlock)
+									.Font(IDetailLayoutBuilder::GetDetailFont())
+									.Text(Item->Label);
+							})
+							.InitiallySelectedItem(CurrentItem)
+							[
+								SAssignNew(CurrentText, STextBlock)
+									.Font(IDetailLayoutBuilder::GetDetailFont())
+									.Text(CurrentItem->Label)
+							]
+					]
+			]
+	);
+}
+
+void FUtilityAiEditorModule::UpdateProperty()
+{
+	if (CurrentItem == Options.Last())
+	{
+		// Show custom loop entry
+		//LoopEntry->SetVisibility(EVisibility::Visible);
+	}
+	else
+	{
+		// Hide custom loop entry
+		//LoopEntry->SetVisibility(EVisibility::Collapsed);
+	}
+
+	//LoopCountProperty->SetValue(CurrentItem->Value);
+	CurrentText->SetText(CurrentItem->Label);
 }
 
 #undef LOCTEXT_NAMESPACE
