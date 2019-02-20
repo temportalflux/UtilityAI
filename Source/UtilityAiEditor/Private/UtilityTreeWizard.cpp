@@ -9,8 +9,7 @@
 #include "Widgets/Input/SComboButton.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SScrollBox.h"
-#include "Widgets/Text/STextBlock.h"
-#include "PropertyCustomizationHelpers.h"
+#include "Widgets/Layout/SSpacer.h"
 
 #include "UtilityAiEditor.h"
 
@@ -62,43 +61,9 @@ TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 	;
 }
 
-void SelectorBlackboardData::GetAllowedClasses(TArray<const UClass*>& classes)
-{
-	classes = this->mClasses;
-}
-
-void SelectorBlackboardData::OnSelectedAsset(const FAssetData& AssetData)
-{
-	this->mpAsset = Cast<UBlackboardData>(AssetData.GetAsset());
-
-	this->mpWidgetAssetName->SetText(
-		this->mpAsset != nullptr
-		? FText::FromString(this->mpAsset->GetName())
-		: LOCTEXT("SelectorBlackboardData_Prompt", "Select Asset")
-	);
-}
-
-void SelectorBlackboardData::CloseMenuAsset()
-{
-	FSlateApplication::Get().DismissAllMenus();
-}
-
-TSharedRef<SWidget> SelectorBlackboardData::Construct()
-{
-	this->mClasses.Empty();
-	this->mClasses.Add(UBlackboardData::StaticClass());
-
-	FAssetData CurrentAssetData = FAssetData(this->mpAsset);
-	return PropertyCustomizationHelpers::MakeAssetPickerWithMenu(
-		CurrentAssetData,
-		true,
-		this->mClasses,
-		PropertyCustomizationHelpers::GetNewAssetFactoriesForClasses(this->mClasses),
-		FOnShouldFilterAsset(),
-		FOnAssetSelected::CreateRaw(this, &SelectorBlackboardData::OnSelectedAsset),
-		FSimpleDelegate::CreateRaw(this, &SelectorBlackboardData::CloseMenuAsset)
-	);
-}
+const FText UtilityTreeWizard::TextCreateActionLabel = LOCTEXT("UtilityTreeWizard_CreateAction", "Create Action");
+const FText UtilityTreeWizard::TextButtonFinish = LOCTEXT("UtilityTreeWizard_ButtonFinish", "Finish");
+const FText UtilityTreeWizard::TextButtonAddAction = LOCTEXT("UtilityTreeWizard_ButtonAddAction", "Add Action");
 
 void UtilityTreeWizard::Open()
 {
@@ -116,38 +81,60 @@ void UtilityTreeWizard::Open()
 			.ScrollBarAlwaysVisible(true)
 			.OnUserScrolled(FOnUserScrolled::CreateRaw(this, &UtilityTreeWizard::OnUserScrolled))
 			+ SScrollBox::Slot()
-			[ CreateVerticalBoxFillWidth(
-				SAssignNew(mpWidgetSwitcher, SWidgetSwitcher)
-				/*
+			[CreateVerticalBoxFillWidth(
+
 				SNew(SVerticalBox)
-					+ SVerticalBox::Slot()
+
+					+SVerticalBox::Slot()
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Top)
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(TEXT("Create Action")))
-					]
-				
-					// Blackboard Selector Asset
-					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[ CreateField(
+						LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
+						mpBlackboardSelector->Construct(FOnAssetSelected::CreateRaw(this, &UtilityTreeWizard::OnBlackboardAssetSelected))
+					) ]
+	
+					+SVerticalBox::Slot()
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Top)
 					.AutoHeight()
 					[
-						CreateField(
-							LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
-							SNew(SComboButton)
-							.OnGetMenuContent(FOnGetContent::CreateRaw(this, &UtilityTreeWizard::BuildMenuSelectBlackboardAsset))
-							.ContentPadding(FMargin(2.0f, 2.0f))
-							.MenuPlacement(MenuPlacement_BelowAnchor)
-							.ButtonContent()
+						SNew(SHorizontalBox)
+
+							+SHorizontalBox::Slot()
+							.HAlign(HAlign_Left)
+							.VAlign(VAlign_Center)
+							.AutoWidth()
 							[
-								SAssignNew(mWidgetBlackboardAssetName, STextBlock)
-								.Text(LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"))
+								SAssignNew(mpButtonFinish, SButton)
+								.IsEnabled(false)
+								.OnPressed(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::GenerateNodes))
+								.Content()
+								[ SNew(STextBlock).Text(TextButtonFinish) ]
 							]
-						)
+
+							+SHorizontalBox::Slot()
+							.HAlign(HAlign_Left)
+							.VAlign(VAlign_Center)
+							.AutoWidth()
+							[
+								SAssignNew(mpButtonAddAction, SButton)
+								.IsEnabled(false)
+								.OnPressed(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::AddAction))
+								.Content()
+								[ SNew(STextBlock).Text(TextButtonAddAction) ]
+							]
+
 					]
-				//*/
+
+					+SVerticalBox::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Top)
+					.AutoHeight()
+					[
+						SAssignNew(mpWidgetSwitcher, SWidgetSwitcher)
+					]
+				
 			) ]
 			/*
 				+ SVerticalBox::Slot()
@@ -180,17 +167,77 @@ void UtilityTreeWizard::Open()
 		]
 	);
 
-	mpWidgetSwitcher->SetActiveWidgetIndex(INDEX_NONE);
+	this->mpWidgetSwitcher->SetActiveWidgetIndex(INDEX_NONE);
+}
+
+void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
+{
+	this->mUtilityTreeDetails.mpBlackboard = Cast<UBlackboardData>(asset.GetAsset());
+	this->mpButtonFinish->SetEnabled(true);
+	this->mpButtonAddAction->SetEnabled(true);
+	this->AddAction();
+}
+
+void UtilityTreeWizard::AddAction()
+{
+	FUtilityActionDetails action;
+
+	int32 nextIndex = this->mpWidgetSwitcher->GetActiveWidgetIndex() + 1;
+	this->mpWidgetSwitcher->AddSlot()
+	[
+		SNew(SVerticalBox)
+
+			+SVerticalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Top)
+			[
+				SNew(STextBlock).Text(UtilityTreeWizard::TextCreateActionLabel)
+			]
+
+			+SVerticalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Top)
+			[
+				SNew(STextBlock).Text(FText::FromString(FString::FromInt(nextIndex)))
+			]
+
+	];
+	this->mpWidgetSwitcher->SetActiveWidgetIndex(nextIndex);
+	
+	this->mUtilityTreeDetails.mActions.Add(action);
+
+	/*
+	SNew(SVerticalBox)
+
+	// Blackboard Selector Asset
+	+ SVerticalBox::Slot()
+	.HAlign(HAlign_Center)
+	.VAlign(VAlign_Top)
+	.AutoHeight()
+	[
+	CreateField(
+	LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
+	SNew(SComboButton)
+	.OnGetMenuContent(FOnGetContent::CreateRaw(this, &UtilityTreeWizard::BuildMenuSelectBlackboardAsset))
+	.ContentPadding(FMargin(2.0f, 2.0f))
+	.MenuPlacement(MenuPlacement_BelowAnchor)
+	.ButtonContent()
+	[
+	SAssignNew(mWidgetBlackboardAssetName, STextBlock)
+	.Text(LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"))
+	]
+	)
+	]
+	//*/
+}
+
+void UtilityTreeWizard::GenerateNodes()
+{
 }
 
 void UtilityTreeWizard::OnUserScrolled(float amount)
 {
 
-}
-
-TSharedRef<SWidget> UtilityTreeWizard::BuildMenuSelectBlackboardAsset()
-{
-	return this->mpBlackboardSelector->Construct();
 }
 
 #undef LOCTEXT_NAMESPACE

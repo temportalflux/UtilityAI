@@ -1,8 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BlackboardData.h"
+
+#include "AssetSelectorBlackboardData.h"
+
 #include "Widgets/Layout/SWidgetSwitcher.h"
+
 
 struct FUtilityActionDetails
 {
@@ -15,27 +18,16 @@ struct FUtilityTreeDetails
 	TArray<FUtilityActionDetails> mActions;
 };
 
-class SelectorBlackboardData
-{
-	UBlackboardData *mpAsset;
-
-	TArray<const UClass*> mClasses;
-	TSharedPtr<STextBlock> mpWidgetAssetName;
-
-public:
-	void GetAllowedClasses(TArray<const UClass*>& classes);
-	void OnSelectedAsset(const FAssetData& AssetData);
-	void CloseMenuAsset();
-
-	TSharedRef<SWidget> Construct();
-
-};
-
 class UtilityTreeWizard
 {
-private:
-	SelectorBlackboardData mpBlackboardSelector[1];
+	static const FText TextCreateActionLabel;
+	static const FText TextButtonFinish;
+	static const FText TextButtonAddAction;
 
+private:
+	AssetSelectorBlackboardData mpBlackboardSelector[1];
+
+	TSharedPtr<SWidget> mpButtonFinish, mpButtonAddAction;
 	TSharedPtr<SWidgetSwitcher> mpWidgetSwitcher;
 
 	FUtilityTreeDetails mUtilityTreeDetails;
@@ -47,7 +39,9 @@ public:
 	
 	void OnUserScrolled(float amount);
 
-	TSharedRef<SWidget> BuildMenuSelectBlackboardAsset();
+	void OnBlackboardAssetSelected(FAssetData const &asset);
+	void AddAction();
+	void GenerateNodes();
 
 	//TArray<TSharedPtr< FComboTest>> Options;
 	//TSharedPtr<FComboTest> CurrentItem;
