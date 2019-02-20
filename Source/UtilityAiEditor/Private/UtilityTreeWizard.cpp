@@ -11,6 +11,8 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSpacer.h"
 
+#include "SUtilityAction.h"
+
 #include "UtilityAiEditor.h"
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_UtilityAiWizard"
@@ -61,7 +63,6 @@ TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 	;
 }
 
-const FText UtilityTreeWizard::TextCreateActionLabel = LOCTEXT("UtilityTreeWizard_CreateAction", "Create Action");
 const FText UtilityTreeWizard::TextButtonFinish = LOCTEXT("UtilityTreeWizard_ButtonFinish", "Finish");
 const FText UtilityTreeWizard::TextButtonAddAction = LOCTEXT("UtilityTreeWizard_ButtonAddAction", "Add Action");
 
@@ -91,7 +92,8 @@ void UtilityTreeWizard::Open()
 					.AutoHeight()
 					[ CreateField(
 						LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
-						mpBlackboardSelector->Construct(FOnAssetSelected::CreateRaw(this, &UtilityTreeWizard::OnBlackboardAssetSelected))
+						SAssignNew(mpBlackboardSelector, SAssetSelectorBlackboardData)
+						.OnAssetSelected(FOnAssetSelected::CreateRaw(this, &UtilityTreeWizard::OnBlackboardAssetSelected))
 					) ]
 	
 					+SVerticalBox::Slot()
@@ -185,22 +187,8 @@ void UtilityTreeWizard::AddAction()
 	int32 nextIndex = this->mpWidgetSwitcher->GetActiveWidgetIndex() + 1;
 	this->mpWidgetSwitcher->AddSlot()
 	[
-		SNew(SVerticalBox)
-
-			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Top)
-			[
-				SNew(STextBlock).Text(UtilityTreeWizard::TextCreateActionLabel)
-			]
-
-			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Top)
-			[
-				SNew(STextBlock).Text(FText::FromString(FString::FromInt(nextIndex)))
-			]
-
+		SNew(SUtilityAction)
+		.Index(nextIndex)
 	];
 	this->mpWidgetSwitcher->SetActiveWidgetIndex(nextIndex);
 	

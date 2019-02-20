@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SlateFwd.h"
+#include "Framework/SlateDelegates.h"
+#include "Widgets/SWidget.h"
 
 #include "BehaviorTree/BlackboardData.h"
 
@@ -11,7 +14,8 @@
 
 #include "PropertyCustomizationHelpers.h"
 
-class AssetSelectorBlackboardData
+class SAssetSelectorBlackboardData
+	: public SCompoundWidget
 {
 	static const FText TextSelectionPrompt;
 	static const FText TextSelectionConfirm;
@@ -32,6 +36,15 @@ class AssetSelectorBlackboardData
 
 public:
 
-	TSharedRef<SWidget> Construct(FOnAssetSelected onAssetConfirmed);
+	SLATE_BEGIN_ARGS(SAssetSelectorBlackboardData)
+		: _OnAssetSelected(0)
+	{}
+
+		/** Exposes a delegate to be invoked when the wizard is canceled. */
+		SLATE_EVENT(FOnAssetSelected, OnAssetSelected)
+
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs);
 
 };

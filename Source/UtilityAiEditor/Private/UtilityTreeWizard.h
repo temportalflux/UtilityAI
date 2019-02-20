@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "AssetSelectorBlackboardData.h"
+#include "SAssetSelectorBlackboardData.h"
 
 #include "Widgets/Layout/SWidgetSwitcher.h"
 
@@ -20,12 +20,11 @@ struct FUtilityTreeDetails
 
 class UtilityTreeWizard
 {
-	static const FText TextCreateActionLabel;
 	static const FText TextButtonFinish;
 	static const FText TextButtonAddAction;
 
 private:
-	AssetSelectorBlackboardData mpBlackboardSelector[1];
+	TSharedPtr<SAssetSelectorBlackboardData> mpBlackboardSelector;
 
 	TSharedPtr<SWidget> mpButtonFinish, mpButtonAddAction;
 	TSharedPtr<SWidgetSwitcher> mpWidgetSwitcher;
