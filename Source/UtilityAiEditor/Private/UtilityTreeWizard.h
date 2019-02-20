@@ -2,19 +2,41 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BlackboardData.h"
+#include "Widgets/Layout/SWidgetSwitcher.h"
+
+struct FUtilityActionDetails
+{
+	FName mName;
+};
 
 struct FUtilityTreeDetails
 {
 	UBlackboardData *mpBlackboard;
+	TArray<FUtilityActionDetails> mActions;
+};
+
+class SelectorBlackboardData
+{
+	UBlackboardData *mpAsset;
+
+	TArray<const UClass*> mClasses;
+	TSharedPtr<STextBlock> mpWidgetAssetName;
+
+public:
+	void GetAllowedClasses(TArray<const UClass*>& classes);
+	void OnSelectedAsset(const FAssetData& AssetData);
+	void CloseMenuAsset();
+
+	TSharedRef<SWidget> Construct();
 
 };
 
 class UtilityTreeWizard
 {
 private:
-	TArray<const UClass*> mBlackboardClasses;
+	SelectorBlackboardData mpBlackboardSelector[1];
 
-	TSharedPtr<STextBlock> mWidgetBlackboardAssetName;
+	TSharedPtr<SWidgetSwitcher> mpWidgetSwitcher;
 
 	FUtilityTreeDetails mUtilityTreeDetails;
 
@@ -22,10 +44,10 @@ public:
 	UtilityTreeWizard() {}
 
 	void Open();
+	
+	void OnUserScrolled(float amount);
+
 	TSharedRef<SWidget> BuildMenuSelectBlackboardAsset();
-	void GetAllowedClasses(TArray<const UClass*>& classes);
-	void OnSelectedBlackboardAsset(const FAssetData& AssetData);
-	void CloseMenuBlackboardAsset();
 
 	//TArray<TSharedPtr< FComboTest>> Options;
 	//TSharedPtr<FComboTest> CurrentItem;

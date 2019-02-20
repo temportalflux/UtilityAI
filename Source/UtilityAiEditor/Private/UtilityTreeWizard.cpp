@@ -8,6 +8,7 @@
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SComboButton.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "PropertyCustomizationHelpers.h"
 
@@ -30,6 +31,16 @@ void OpenWindow(TSharedRef<SWindow> window)
 	}
 }
 
+TSharedRef<SWidget> CreateVerticalBoxFillWidth(TSharedRef<SWidget> child)
+{
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Top)
+		.FillWidth(1.0f)
+		[child];
+}
+
 TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 {
 	return SNew(SHorizontalBox)
@@ -37,6 +48,7 @@ TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 		+ SHorizontalBox::Slot()
 		.HAlign(HAlign_Left)
 		.VAlign(VAlign_Center)
+		.AutoWidth()
 		[
 			SNew(STextBlock)
 			.Text(label)
@@ -50,16 +62,47 @@ TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 	;
 }
 
-void UtilityTreeWizard::GetAllowedClasses(TArray<const UClass*>& classes)
+void SelectorBlackboardData::GetAllowedClasses(TArray<const UClass*>& classes)
 {
-	classes = this->mBlackboardClasses;
+	classes = this->mClasses;
+}
+
+void SelectorBlackboardData::OnSelectedAsset(const FAssetData& AssetData)
+{
+	this->mpAsset = Cast<UBlackboardData>(AssetData.GetAsset());
+
+	this->mpWidgetAssetName->SetText(
+		this->mpAsset != nullptr
+		? FText::FromString(this->mpAsset->GetName())
+		: LOCTEXT("SelectorBlackboardData_Prompt", "Select Asset")
+	);
+}
+
+void SelectorBlackboardData::CloseMenuAsset()
+{
+	FSlateApplication::Get().DismissAllMenus();
+}
+
+TSharedRef<SWidget> SelectorBlackboardData::Construct()
+{
+	this->mClasses.Empty();
+	this->mClasses.Add(UBlackboardData::StaticClass());
+
+	FAssetData CurrentAssetData = FAssetData(this->mpAsset);
+	return PropertyCustomizationHelpers::MakeAssetPickerWithMenu(
+		CurrentAssetData,
+		true,
+		this->mClasses,
+		PropertyCustomizationHelpers::GetNewAssetFactoriesForClasses(this->mClasses),
+		FOnShouldFilterAsset(),
+		FOnAssetSelected::CreateRaw(this, &SelectorBlackboardData::OnSelectedAsset),
+		FSimpleDelegate::CreateRaw(this, &SelectorBlackboardData::CloseMenuAsset)
+	);
 }
 
 void UtilityTreeWizard::Open()
 {
 	this->mUtilityTreeDetails.mpBlackboard = 0;
-	this->mBlackboardClasses.Empty();
-	this->mBlackboardClasses.Add(UBlackboardData::StaticClass());
 
 	OpenWindow(
 		SNew(SWindow)
@@ -68,36 +111,45 @@ void UtilityTreeWizard::Open()
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
-			SNew(SVerticalBox)
-
-				+ SVerticalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Top)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Create Action")))
-				]
-				
-				// Blackboard Selector Asset
-				+ SVerticalBox::Slot()
-				.HAlign(HAlign_Left)
-				.VAlign(VAlign_Top)
-				[
-					CreateField(
-						LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
-						SNew(SComboButton)
-						.OnGetMenuContent(FOnGetContent::CreateRaw(this, &UtilityTreeWizard::BuildMenuSelectBlackboardAsset))
-						.ContentPadding(FMargin(2.0f, 2.0f))
-						.MenuPlacement(MenuPlacement_BelowAnchor)
-						.ButtonContent()
-						[
-							SAssignNew(mWidgetBlackboardAssetName, STextBlock)
-							.Text(LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"))
-						]
-					)
-				]
-
+			SNew(SScrollBox)
+			.Orientation(Orient_Vertical)
+			.ScrollBarAlwaysVisible(true)
+			.OnUserScrolled(FOnUserScrolled::CreateRaw(this, &UtilityTreeWizard::OnUserScrolled))
+			+ SScrollBox::Slot()
+			[ CreateVerticalBoxFillWidth(
+				SAssignNew(mpWidgetSwitcher, SWidgetSwitcher)
 				/*
+				SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Top)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(TEXT("Create Action")))
+					]
+				
+					// Blackboard Selector Asset
+					+ SVerticalBox::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Top)
+					.AutoHeight()
+					[
+						CreateField(
+							LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
+							SNew(SComboButton)
+							.OnGetMenuContent(FOnGetContent::CreateRaw(this, &UtilityTreeWizard::BuildMenuSelectBlackboardAsset))
+							.ContentPadding(FMargin(2.0f, 2.0f))
+							.MenuPlacement(MenuPlacement_BelowAnchor)
+							.ButtonContent()
+							[
+								SAssignNew(mWidgetBlackboardAssetName, STextBlock)
+								.Text(LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"))
+							]
+						)
+					]
+				//*/
+			) ]
+			/*
 				+ SVerticalBox::Slot()
 				.HAlign(HAlign_Left)
 				.VAlign(VAlign_Top)
@@ -127,36 +179,18 @@ void UtilityTreeWizard::Open()
 				//*/
 		]
 	);
+
+	mpWidgetSwitcher->SetActiveWidgetIndex(INDEX_NONE);
+}
+
+void UtilityTreeWizard::OnUserScrolled(float amount)
+{
+
 }
 
 TSharedRef<SWidget> UtilityTreeWizard::BuildMenuSelectBlackboardAsset()
 {
-	FAssetData CurrentAssetData = FAssetData(this->mUtilityTreeDetails.mpBlackboard);
-	return PropertyCustomizationHelpers::MakeAssetPickerWithMenu(
-		CurrentAssetData,
-		true,
-		this->mBlackboardClasses,
-		PropertyCustomizationHelpers::GetNewAssetFactoriesForClasses(this->mBlackboardClasses),
-		FOnShouldFilterAsset(),
-		FOnAssetSelected::CreateRaw(this, &UtilityTreeWizard::OnSelectedBlackboardAsset),
-		FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::CloseMenuBlackboardAsset)
-	);
-}
-
-void UtilityTreeWizard::OnSelectedBlackboardAsset(const FAssetData& AssetData)
-{
-	this->mUtilityTreeDetails.mpBlackboard = Cast<UBlackboardData>(AssetData.GetAsset());
-	
-	this->mWidgetBlackboardAssetName->SetText(
-		this->mUtilityTreeDetails.mpBlackboard != nullptr
-		? FText::FromString(this->mUtilityTreeDetails.mpBlackboard->GetName())
-		: LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset")
-	);
-}
-
-void UtilityTreeWizard::CloseMenuBlackboardAsset()
-{
-	FSlateApplication::Get().DismissAllMenus();
+	return this->mpBlackboardSelector->Construct();
 }
 
 #undef LOCTEXT_NAMESPACE
