@@ -14,7 +14,7 @@ struct FUtilityActionDetails
 
 struct FUtilityTreeDetails
 {
-	UBlackboardData *mpBlackboard;
+	TSharedPtr<UBlackboardData> mpBlackboard;
 	TArray<FUtilityActionDetails> mActions;
 };
 

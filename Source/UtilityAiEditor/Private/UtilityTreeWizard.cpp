@@ -174,7 +174,7 @@ void UtilityTreeWizard::Open()
 
 void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 {
-	this->mUtilityTreeDetails.mpBlackboard = Cast<UBlackboardData>(asset.GetAsset());
+	this->mUtilityTreeDetails.mpBlackboard = MakeShareable(Cast<UBlackboardData>(asset.GetAsset()));
 	this->mpButtonFinish->SetEnabled(true);
 	this->mpButtonAddAction->SetEnabled(true);
 	this->AddAction();
@@ -189,6 +189,7 @@ void UtilityTreeWizard::AddAction()
 	[
 		SNew(SUtilityAction)
 		.Index(nextIndex)
+		.BlackboardAsset(this->mUtilityTreeDetails.mpBlackboard)
 	];
 	this->mpWidgetSwitcher->SetActiveWidgetIndex(nextIndex);
 	

@@ -6,22 +6,27 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 
-class SUtilityAction
+#include "BehaviorTree/BlackboardData.h"
+#include "Widgets/SBoxPanel.h"
+
+class SBlackboardEntryInfo
 	: public SCompoundWidget
 {
-	static const FText TextCreateActionLabel;
-	static const FText TextLabelBlackboardKey;
-
 	TSharedPtr<UBlackboardData> mpBlackboard;
+
+	bool mIsCreatingEntry;
+	TSharedPtr<SVerticalBox> mpWidgetEntryVars;
+
+	void OnClearEntrySelection();
+	void OnMakeEntrySelection(FBlackboardEntry entry);
+	void OnSelectKeyType(UClass* InClass);
 
 public:
 
-	SLATE_BEGIN_ARGS(SUtilityAction)
-		: _Index(0)
-		, _BlackboardAsset(nullptr)
+	SLATE_BEGIN_ARGS(SBlackboardEntryInfo)
+		: _BlackboardAsset(nullptr)
 	{}
 
-		SLATE_ATTRIBUTE(int32, Index)
 		SLATE_ATTRIBUTE(TSharedPtr<UBlackboardData>, BlackboardAsset)
 
 	SLATE_END_ARGS()
@@ -29,3 +34,4 @@ public:
 	void Construct(const FArguments& InArgs);
 
 };
+
