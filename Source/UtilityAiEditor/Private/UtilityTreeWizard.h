@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "SAssetSelectorBlackboardData.h"
+#include "Widgets/SWindow.h"
 
 #include "Widgets/Layout/SWidgetSwitcher.h"
 
@@ -28,6 +29,7 @@ private:
 
 	TSharedPtr<SWidget> mpButtonFinish, mpButtonAddAction;
 	TSharedPtr<SWidgetSwitcher> mpWidgetSwitcher;
+	TSharedPtr<SWindow> mpWindow;
 
 	FUtilityTreeDetails mUtilityTreeDetails;
 

@@ -3,7 +3,6 @@
 #include "IMainFrameModule.h"
 #include "SlateApplication.h"
 
-#include "Widgets/SWindow.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SComboButton.h"
@@ -71,7 +70,7 @@ void UtilityTreeWizard::Open()
 	this->mUtilityTreeDetails.mpBlackboard = 0;
 
 	OpenWindow(
-		SNew(SWindow)
+		SAssignNew(mpWindow, SWindow)
 		.Title(FText::FromString(TEXT("Create Utility Tree")))
 		.ClientSize(FVector2D(400, 800))
 		.SupportsMaximize(false)
@@ -194,34 +193,14 @@ void UtilityTreeWizard::AddAction()
 	this->mpWidgetSwitcher->SetActiveWidgetIndex(nextIndex);
 	
 	this->mUtilityTreeDetails.mActions.Add(action);
-
-	/*
-	SNew(SVerticalBox)
-
-	// Blackboard Selector Asset
-	+ SVerticalBox::Slot()
-	.HAlign(HAlign_Center)
-	.VAlign(VAlign_Top)
-	.AutoHeight()
-	[
-	CreateField(
-	LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
-	SNew(SComboButton)
-	.OnGetMenuContent(FOnGetContent::CreateRaw(this, &UtilityTreeWizard::BuildMenuSelectBlackboardAsset))
-	.ContentPadding(FMargin(2.0f, 2.0f))
-	.MenuPlacement(MenuPlacement_BelowAnchor)
-	.ButtonContent()
-	[
-	SAssignNew(mWidgetBlackboardAssetName, STextBlock)
-	.Text(LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"))
-	]
-	)
-	]
-	//*/
 }
 
 void UtilityTreeWizard::GenerateNodes()
 {
+	if (this->mpWindow.IsValid())
+	{
+		this->mpWindow->RequestDestroyWindow();
+	}
 }
 
 void UtilityTreeWizard::OnUserScrolled(float amount)
