@@ -4,14 +4,9 @@
 
 #include "SAssetSelectorBlackboardData.h"
 #include "Widgets/SWindow.h"
+#include "UtilityActionDetails.h"
 
 #include "Widgets/Layout/SWidgetSwitcher.h"
-
-
-struct FUtilityActionDetails
-{
-	FName mName;
-};
 
 struct FUtilityTreeDetails
 {

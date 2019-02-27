@@ -17,6 +17,7 @@ DECLARE_DELEGATE_OneParam(
 class SSelectorBlackboardVarType
 	: public SCompoundWidget
 {
+	static const FText Label;
 
 	TSharedPtr<SComboButton> mpSelector;
 	TSharedPtr<STextBlock> mpLabel;

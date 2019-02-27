@@ -201,6 +201,64 @@ void UtilityTreeWizard::GenerateNodes()
 	{
 		this->mpWindow->RequestDestroyWindow();
 	}
+
+	/*
+	const FScopedTransaction Transaction(LOCTEXT("BlackboardEntryAddTransaction", "Add Blackboard Entry"));
+	BlackboardData->SetFlags(RF_Transactional);
+	BlackboardData->Modify();
+
+	// create a name for this new key
+	FString NewKeyName = InClass->GetDisplayNameText().ToString();
+	NewKeyName = NewKeyName.Replace(TEXT(" "), TEXT(""));
+	NewKeyName += TEXT("Key");
+
+	int32 IndexSuffix = -1;
+	auto DuplicateFunction = [&](const FBlackboardEntry& Key)
+	{
+		if(Key.EntryName.ToString() == NewKeyName)
+		{
+			IndexSuffix = FMath::Max(0, IndexSuffix);
+		}
+		if(Key.EntryName.ToString().StartsWith(NewKeyName))
+		{
+			const FString ExistingSuffix = Key.EntryName.ToString().RightChop(NewKeyName.Len());
+			if(ExistingSuffix.IsNumeric())
+			{
+				IndexSuffix = FMath::Max(FCString::Atoi(*ExistingSuffix) + 1, IndexSuffix);
+			}
+		}
+	};
+
+	// check for existing keys of the same name
+	for(const auto& Key : BlackboardData->Keys) { DuplicateFunction(Key); };
+	for(const auto& Key : BlackboardData->ParentKeys) { DuplicateFunction(Key); };
+
+	if(IndexSuffix != -1)
+	{
+		NewKeyName += FString::Printf(TEXT("%d"), IndexSuffix);
+	}
+
+	FBlackboardEntry Entry;
+	Entry.EntryName = FName(*NewKeyName);
+	Entry.KeyType = NewObject<UBlackboardKeyType>(BlackboardData, InClass);
+
+	BlackboardData->Keys.Add(Entry);
+
+	GraphActionMenu->RefreshAllActions(true);
+	OnBlackboardKeyChanged.ExecuteIfBound(BlackboardData, &BlackboardData->Keys.Last());
+
+	GraphActionMenu->SelectItemByName(Entry.EntryName, ESelectInfo::OnMouseClick);
+
+	// Mark newly created entry as 'new'
+	TArray< TSharedPtr<FEdGraphSchemaAction> > SelectedActions;
+	GraphActionMenu->GetSelectedActions(SelectedActions);
+	check(SelectedActions.Num() == 1);
+	check(SelectedActions[0]->GetTypeId() == FEdGraphSchemaAction_BlackboardEntry::StaticGetTypeId());
+	TSharedPtr<FEdGraphSchemaAction_BlackboardEntry> BlackboardEntryAction = StaticCastSharedPtr<FEdGraphSchemaAction_BlackboardEntry>(SelectedActions[0]);
+	BlackboardEntryAction->bIsNew = true;
+
+	GraphActionMenu->OnRequestRenameOnActionNode();
+	*/
 }
 
 void UtilityTreeWizard::OnUserScrolled(float amount)

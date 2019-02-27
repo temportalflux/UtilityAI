@@ -11,6 +11,8 @@
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_SSelectorBlackboardKeyType"
 
+const FText SSelectorBlackboardVarType::Label = LOCTEXT("SelectorBlackboardVarType_SelectLabel", "Select Type");
+
 class FBlackboardEntryClassFilter : public IClassViewerFilter
 {
 public:
@@ -58,6 +60,8 @@ void SSelectorBlackboardVarType::HandleKeyClassPicked(UClass * InClass)
 	check(InClass);
 	check(InClass->IsChildOf(UBlackboardKeyType::StaticClass()));
 
+	mpLabel->SetText(InClass->GetName());
+
 	if (this->OnSelected.IsBound())
 		this->OnSelected.Execute(InClass);
 }
@@ -83,7 +87,7 @@ void SSelectorBlackboardVarType::Construct(const FArguments & InArgs)
 			.ButtonContent()
 			[
 				SAssignNew(mpLabel, STextBlock)
-				.Text(LOCTEXT("Prompt", "Select type"))
+				.Text(SSelectorBlackboardVarType::Label)
 			]
 		]
 

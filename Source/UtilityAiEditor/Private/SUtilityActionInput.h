@@ -7,28 +7,21 @@
 #include "Widgets/SCompoundWidget.h"
 #include "UtilityActionDetails.h"
 
-class SUtilityAction
+class SUtilityActionInput
 	: public SCompoundWidget
 {
-	static const FText TextCreateActionLabel;
-	static const FText TextLabelBlackboardKey;
-
-	FUtilityActionDetails mDetails;
-
+	
 	TSharedPtr<UBlackboardData> mpBlackboard;
-
-	TSharedPtr<SVerticalBox> mpActionInputsBox;
-
-	void AddInputField();
 
 public:
 
-	SLATE_BEGIN_ARGS(SUtilityAction)
+	SLATE_BEGIN_ARGS(SUtilityActionInput)
 		: _Index(0)
 		, _BlackboardAsset(nullptr)
 	{}
 
 		SLATE_ATTRIBUTE(int32, Index)
+		
 		SLATE_ATTRIBUTE(TSharedPtr<UBlackboardData>, BlackboardAsset)
 
 	SLATE_END_ARGS()
