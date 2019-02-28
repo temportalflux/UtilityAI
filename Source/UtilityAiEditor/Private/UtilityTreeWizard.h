@@ -28,6 +28,8 @@ private:
 
 	FUtilityTreeDetails mUtilityTreeDetails;
 
+	void OnActionChanged(int32 const &index, FUtilityActionDetails const &data);
+
 public:
 	UtilityTreeWizard() {}
 

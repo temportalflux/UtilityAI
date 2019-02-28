@@ -189,10 +189,16 @@ void UtilityTreeWizard::AddAction()
 		SNew(SUtilityAction)
 		.Index(nextIndex)
 		.BlackboardAsset(this->mUtilityTreeDetails.mpBlackboard)
+		.OnChanged(FOnUtilityActionChanged::CreateRaw(this, &UtilityTreeWizard::OnActionChanged))
 	];
 	this->mpWidgetSwitcher->SetActiveWidgetIndex(nextIndex);
 	
 	this->mUtilityTreeDetails.mActions.Add(action);
+}
+
+void UtilityTreeWizard::OnActionChanged(int32 const &index, FUtilityActionDetails const &data)
+{
+	this->mUtilityTreeDetails.mActions[index] = data;
 }
 
 void UtilityTreeWizard::GenerateNodes()
@@ -200,6 +206,23 @@ void UtilityTreeWizard::GenerateNodes()
 	if (this->mpWindow.IsValid())
 	{
 		this->mpWindow->RequestDestroyWindow();
+		this->mpWindow = nullptr;
+	}
+	else return;
+
+	FUtilityTreeDetails const &treeDetails = this->mUtilityTreeDetails;
+
+	auto const pBlackboard = treeDetails.mpBlackboard;
+
+	if (!pBlackboard.IsValid()) return;
+
+	auto const actions = treeDetails.mActions;
+
+	UE_LOG(LogUtilityAiEditor, Log, TEXT("Found utility tree with blackboard %s"), *pBlackboard->GetName());
+	for (auto const action : actions)
+	{
+		FName const actionName = action.mName;
+		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
 	}
 
 	/*

@@ -6,10 +6,12 @@
 struct FUtilityActionInput
 {
 	FUtilityActionEntry mBlackboardKeyEntry;
+	float mInputValue;
+
 };
 
 struct FUtilityActionDetails
 {
 	FName mName;
-	TArray<FUtilityActionInput> mInputs;
+	TMap<FGuid, FUtilityActionInput> mInputs;
 };
