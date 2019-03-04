@@ -23,7 +23,15 @@ public class UtilityAiEditor : ModuleRules
             }
             );
 
-
+        PrivateIncludePathModuleNames.AddRange(
+            new string[] {
+                "AssetRegistry",
+                "AssetTools",
+                "PropertyEditor",
+                "ContentBrowser"
+            }
+        );
+        
         PublicDependencyModuleNames.AddRange(
             new string[]
             {
@@ -77,8 +85,12 @@ public class UtilityAiEditor : ModuleRules
         DynamicallyLoadedModuleNames.AddRange(
             new string[]
             {
-				// ... add any modules that your module loads dynamically here ...
-			}
+				// ... add any modules that your module loads dynamically here ... 
+                "WorkspaceMenuStructure",
+                "AssetTools",
+                "AssetRegistry",
+                "ContentBrowser",
+            }
             );
     }
 }

@@ -1,8 +1,10 @@
 #include "UtilityTreeWizard.h"
 
+// Window
 #include "IMainFrameModule.h"
 #include "SlateApplication.h"
 
+// Slate UI
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SComboButton.h"
@@ -10,7 +12,14 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSpacer.h"
 
+// Data
 #include "SUtilityAction.h"
+
+// Assets
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
+#include "Engine/Classes/Curves/CurveFloat.h"
+#include "UnrealEd/Classes/Factories/CurveFactory.h"
 
 #include "UtilityAiEditor.h"
 
@@ -224,6 +233,17 @@ void UtilityTreeWizard::GenerateNodes()
 		FName const actionName = action.mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
 	}
+
+	//IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+	//IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
+	FContentBrowserModule &ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	IContentBrowserSingleton &browser = ContentBrowserModule.Get();
+	UCurveFloat *curve;
+	TSharedPtr<UCurveFloatFactory> factory = MakeShareable(NewObject<UCurveFloatFactory>());
+	//factory->FactoryCreateNew(UCurveFloat::StaticClass(), nullptr, "TestCurve", EObjectFlags::RF_NoFlags, nullptr, );
+	//browser.CreateNewAsset();
+
+	//FContentBr
 
 	/*
 	const FScopedTransaction Transaction(LOCTEXT("BlackboardEntryAddTransaction", "Add Blackboard Entry"));
