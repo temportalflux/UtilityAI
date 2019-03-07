@@ -236,10 +236,9 @@ void UtilityTreeWizard::GenerateNodes()
 
 	//IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
 	//IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
-	FContentBrowserModule &ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	IContentBrowserSingleton &browser = ContentBrowserModule.Get();
-	UCurveFloat *curve;
-	TSharedPtr<UCurveFloatFactory> factory = MakeShareable(NewObject<UCurveFloatFactory>());
+	//FContentBrowserModule &ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	//IContentBrowserSingleton &browser = ContentBrowserModule.Get();
+	//TSharedPtr<UCurveFloatFactory> factory = MakeShareable(NewObject<UCurveFloatFactory>());
 	//factory->FactoryCreateNew(UCurveFloat::StaticClass(), nullptr, "TestCurve", EObjectFlags::RF_NoFlags, nullptr, );
 	//browser.CreateNewAsset();
 

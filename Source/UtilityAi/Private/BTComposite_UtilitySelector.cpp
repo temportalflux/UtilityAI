@@ -72,7 +72,7 @@ void UBTComposite_UtilitySelector::NotifyNodeActivation(FBehaviorTreeSearchData&
 
 		if (utilityNode != nullptr)
 		{
-			utilityScores.Add(FIndexedValue(iChild, utilityNode->EvaluateUtility()));
+			utilityScores.Add(FIndexedValue(iChild, utilityNode->EvaluateUtility(SearchData.OwnerComp)));
 		}
 		else
 		{

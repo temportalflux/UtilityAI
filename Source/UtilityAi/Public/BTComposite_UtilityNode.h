@@ -3,8 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "BehaviorTree/BTCompositeNode.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+
 #include "BTComposite_UtilityNode.generated.h"
+
+class UCurveFloat;
+
+USTRUCT(BlueprintType)
+struct FUtilityInput
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		FBlackboardKeySelector Key;
+	UPROPERTY(EditAnywhere)
+		UCurveFloat* Curve;
+};
 
 /**
  * 
@@ -17,7 +33,7 @@ class UTILITYAI_API UBTComposite_UtilityNode : public UBTCompositeNode
 public:
 
 	UPROPERTY(EditAnywhere)
-		int32 UtilityValue;
+		TArray<FUtilityInput> Inputs;
 	
 public:
 	UBTComposite_UtilityNode(const FObjectInitializer& ObjectInitializer);
@@ -29,6 +45,6 @@ public:
 
 	int32 GetNextChildHandler(struct FBehaviorTreeSearchData& SearchData, int32 PrevChild, EBTNodeResult::Type LastResult) const;
 		
-	int32 EvaluateUtility() const;
+	int32 EvaluateUtility(UBehaviorTreeComponent const &OwnerComp) const;
 
 };
