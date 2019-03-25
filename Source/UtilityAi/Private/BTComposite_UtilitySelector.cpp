@@ -46,9 +46,9 @@ void UBTComposite_UtilitySelector::NotifyNodeActivation(FBehaviorTreeSearchData&
 	struct FIndexedValue
 	{
 		int32 ChildIdx;
-		int32 UtilityValue;
+		float UtilityValue;
 
-		inline FIndexedValue(int32 index, int32 value)
+		inline FIndexedValue(int32 index, float value)
 			: ChildIdx(index), UtilityValue(value)
 		{
 		}
@@ -72,7 +72,11 @@ void UBTComposite_UtilitySelector::NotifyNodeActivation(FBehaviorTreeSearchData&
 
 		if (utilityNode != nullptr)
 		{
-			utilityScores.Add(FIndexedValue(iChild, utilityNode->EvaluateUtility(SearchData.OwnerComp)));
+			auto utility = utilityNode->EvaluateUtility(SearchData.OwnerComp);
+			if (utilityNode->CanExecute(utility))
+			{
+				utilityScores.Add(FIndexedValue(iChild, utility));
+			}
 		}
 		else
 		{

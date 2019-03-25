@@ -18,8 +18,10 @@ struct FUtilityInput
 
 	UPROPERTY(EditAnywhere)
 		FBlackboardKeySelector Key;
+
 	UPROPERTY(EditAnywhere)
 		UCurveFloat* Curve;
+
 };
 
 /**
@@ -34,6 +36,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		TArray<FUtilityInput> Inputs;
+
+	UPROPERTY(EditAnywhere)
+		bool CanExecuteUtilityLTEZero;
 	
 public:
 	UBTComposite_UtilityNode(const FObjectInitializer& ObjectInitializer);
@@ -45,6 +50,8 @@ public:
 
 	int32 GetNextChildHandler(struct FBehaviorTreeSearchData& SearchData, int32 PrevChild, EBTNodeResult::Type LastResult) const;
 		
-	int32 EvaluateUtility(UBehaviorTreeComponent const &OwnerComp) const;
+	float EvaluateUtility(UBehaviorTreeComponent const &OwnerComp) const;
+
+	bool const CanExecute(float utilityValue) const;
 
 };

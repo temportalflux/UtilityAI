@@ -30,8 +30,9 @@ FName UBTComposite_UtilityNode::GetNodeIconName() const
 
 #endif
 
-float const resolveBlackboardKeyValue(FBlackboardKeySelector const key, UBlackboardComponent const *pBlackboard)
+float const resolveBlackboardKeyValue(FBlackboardKeySelector key, UBlackboardComponent const *pBlackboard)
 {
+	key.ResolveSelectedKey(*pBlackboard->GetBlackboardAsset());
 	// Bool => 0 or 1
 	if (key.SelectedKeyType == UBlackboardKeyType_Bool::StaticClass()) return pBlackboard->GetValue<UBlackboardKeyType_Bool>(key.GetSelectedKeyID()) ? 1.0f : 0.0f;
 	// Enum integer value as float
@@ -49,10 +50,14 @@ float const resolveBlackboardKeyValue(FBlackboardKeySelector const key, UBlackbo
 	else if (key.SelectedKeyType == UBlackboardKeyType_String::StaticClass()) return 0;
 	else if (key.SelectedKeyType == UBlackboardKeyType_Class::StaticClass()) return 0;
 	else if (key.SelectedKeyType == UBlackboardKeyType_Object::StaticClass()) return 0;
-	else return 0;
+	else
+	{
+		UE_LOG(LogUtilityAi, Log, TEXT("No class type found for blackboard key %s"), *key.SelectedKeyName.ToString());
+		return 0;
+	}
 }
 
-int32 UBTComposite_UtilityNode::EvaluateUtility(UBehaviorTreeComponent const &OwnerComp) const
+float UBTComposite_UtilityNode::EvaluateUtility(UBehaviorTreeComponent const &OwnerComp) const
 {
 	//return FMath::Rand() % this->UtilityValue;
 	//return this->UtilityValue;
@@ -67,7 +72,12 @@ int32 UBTComposite_UtilityNode::EvaluateUtility(UBehaviorTreeComponent const &Ow
 		inputUtilitySum += input.Curve->GetFloatValue(blackboardValue);
 	}
 
-	return (int32)inputUtilitySum;
+	return inputUtilitySum;
+}
+
+bool const UBTComposite_UtilityNode::CanExecute(float utilityValue) const
+{
+	return utilityValue > 0 || this->CanExecuteUtilityLTEZero;
 }
 
 int32 UBTComposite_UtilityNode::GetNextChildHandler(FBehaviorTreeSearchData& SearchData, int32 PrevChild, EBTNodeResult::Type LastResult) const
