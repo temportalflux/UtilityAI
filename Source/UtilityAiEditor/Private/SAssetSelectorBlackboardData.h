@@ -6,6 +6,7 @@
 #include "Widgets/SWidget.h"
 
 #include "BehaviorTree/BlackboardData.h"
+#include "BehaviorTree/BehaviorTree.h"
 
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboButton.h"
@@ -14,13 +15,17 @@
 
 #include "PropertyCustomizationHelpers.h"
 
+/**
+* Dropdown and confirm button to select a blackboard asset
+*/
 class SAssetSelectorBlackboardData
 	: public SCompoundWidget
 {
 	static const FText TextSelectionPrompt;
 	static const FText TextSelectionConfirm;
 
-	UBlackboardData *mpAsset;
+	//UBlackboardData *mpAsset;
+	UBehaviorTree *mpAsset;
 	FOnAssetSelected mpOnAssetConfirmed;
 
 	TArray<const UClass*> mClasses;

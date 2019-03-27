@@ -28,7 +28,8 @@ public class UtilityAiEditor : ModuleRules
                 "AssetRegistry",
                 "AssetTools",
                 "PropertyEditor",
-                "ContentBrowser"
+                "ContentBrowser",
+                "BehaviorTreeEditor",
             }
         );
         

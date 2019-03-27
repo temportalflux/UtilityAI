@@ -2,7 +2,6 @@
 
 #include "Widgets/SBoxPanel.h"
 #include "SBlackboardEntryInfo.h"
-#include "Widgets/Input/SNumericEntryBox.h"
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_SUtilityActionInput"
 
@@ -88,7 +87,8 @@ void SUtilityActionInput::Construct(const FArguments & InArgs)
 							.VAlign(VAlign_Top)
 							.AutoWidth()
 							[
-								SNew(SNumericEntryBox<float>)
+								SAssignNew(mpWidgetInputValue, SNumericEntryBox<float>)
+								.Value(this, &SUtilityActionInput::GetInputValue)
 								.OnValueCommitted(SNumericEntryBox<float>::FOnValueCommitted::CreateRaw(
 									this, &SUtilityActionInput::OnCommittedInputValue))
 							]
@@ -97,6 +97,11 @@ void SUtilityActionInput::Construct(const FArguments & InArgs)
 			]
 
 	];
+}
+
+TOptional<float> SUtilityActionInput::GetInputValue() const
+{
+	return this->mData.mInputValue;
 }
 
 void SUtilityActionInput::OnDelete()

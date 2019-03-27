@@ -12,6 +12,9 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSpacer.h"
 
+#include "BehaviorTreeGraph.h"
+#include "BehaviorTreeGraphNode_Composite.h"
+
 // Data
 #include "SUtilityAction.h"
 
@@ -182,7 +185,14 @@ void UtilityTreeWizard::Open()
 
 void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 {
-	this->mUtilityTreeDetails.mpBlackboard = MakeShareable(Cast<UBlackboardData>(asset.GetAsset()));
+	this->mpBehaviorTreeAsset = MakeShareable(Cast<UBehaviorTree>(asset.GetAsset()));
+	
+	if (this->mpBehaviorTreeAsset->BlackboardAsset == nullptr)
+	{
+		return;
+	}
+
+	this->mUtilityTreeDetails.mpBlackboard = MakeShareable(this->mpBehaviorTreeAsset->BlackboardAsset);
 	this->mpButtonFinish->SetEnabled(true);
 	this->mpButtonAddAction->SetEnabled(true);
 	this->AddAction();
@@ -221,17 +231,32 @@ void UtilityTreeWizard::GenerateNodes()
 
 	FUtilityTreeDetails const &treeDetails = this->mUtilityTreeDetails;
 
-	auto const pBlackboard = treeDetails.mpBlackboard;
-
-	if (!pBlackboard.IsValid()) return;
-
 	auto const actions = treeDetails.mActions;
 
-	UE_LOG(LogUtilityAiEditor, Log, TEXT("Found utility tree with blackboard %s"), *pBlackboard->GetName());
+	if (this->mpBehaviorTreeAsset->BlackboardAsset == nullptr)
+	{
+		return;
+	}
+	
+	auto graph = Cast<UBehaviorTreeGraph>(this->mpBehaviorTreeAsset->BTGraph);
+	//NewObject<UBehaviorTreeGraphNode_Composite>();
+	//graph->AddNode(nullptr, false, false);
+
+	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
+		*this->mpBehaviorTreeAsset->GetName(),
+		*this->mpBehaviorTreeAsset->BlackboardAsset->GetName());
 	for (auto const action : actions)
 	{
 		FName const actionName = action.mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
+		for (auto const actionInputPair : action.mInputs)
+		{
+			auto const actionInputValue = actionInputPair.Value;
+			UE_LOG(LogUtilityAiEditor, Log, TEXT("%s|%s: %.2f"), *actionName.ToString(),
+				*actionInputValue.mBlackboardKeyEntry.mName.ToString(),
+				actionInputValue.mInputValue
+			);
+		}
 	}
 
 	//IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));

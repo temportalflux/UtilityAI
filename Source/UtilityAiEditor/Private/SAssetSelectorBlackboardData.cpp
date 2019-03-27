@@ -15,7 +15,8 @@ void SAssetSelectorBlackboardData::GetAllowedClasses(TArray<const UClass*>& clas
 
 void SAssetSelectorBlackboardData::OnSelectedAsset(const FAssetData& AssetData)
 {
-	this->mpAsset = Cast<UBlackboardData>(AssetData.GetAsset());
+	//this->mpAsset = Cast<UBlackboardData>(AssetData.GetAsset());
+	this->mpAsset = Cast<UBehaviorTree>(AssetData.GetAsset());
 
 	this->mpWidgetAssetName->SetText(
 		this->mpAsset != nullptr
@@ -56,7 +57,9 @@ void SAssetSelectorBlackboardData::Construct(const FArguments& InArgs)
 	this->mpAsset = nullptr;
 
 	this->mClasses.Empty();
-	this->mClasses.Add(UBlackboardData::StaticClass());
+	// TODO: Rename this widget, its actually a behaviortree selector
+	//this->mClasses.Add(UBlackboardData::StaticClass());
+	this->mClasses.Add(UBehaviorTree::StaticClass());
 
 	ChildSlot
 	[

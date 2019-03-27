@@ -9,10 +9,13 @@
 
 DECLARE_DELEGATE_TwoParams(FOnUtilityActionChanged, int32 const &, FUtilityActionDetails const &)
 
+/**
+* All configurable data about a specific action
+*/
 class SUtilityAction
 	: public SCompoundWidget
 {
-	static const FText TextCreateActionLabel;
+	static const FText TextActionNameLabel;
 
 	FUtilityActionDetails mDetails;
 
@@ -24,6 +27,7 @@ class SUtilityAction
 
 	FOnUtilityActionChanged mOnChanged;
 
+	void OnNameCommitted(FText const &text, ETextCommit::Type commitType);
 	void AddInputField();
 	void RemoveInputField(FGuid const &id);
 	void OnInputValueCommitted(FGuid const &id, FUtilityActionInput const &data);

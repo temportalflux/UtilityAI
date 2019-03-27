@@ -6,12 +6,16 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SNumericEntryBox.h"
 #include "UtilityActionDetails.h"
 
 DECLARE_DELEGATE_OneParam(FOnActionDelete, FGuid const &)
 
 DECLARE_DELEGATE_TwoParams(FOnActionInputCommitted, FGuid const &, FUtilityActionInput const &)
 
+/**
+* An input for a UtilityAction (configurable key and data for curve)
+*/
 class SUtilityActionInput
 	: public SCompoundWidget
 {
@@ -20,11 +24,14 @@ class SUtilityActionInput
 	FGuid mId;
 	TSharedPtr<UBlackboardData> mpBlackboard;
 
+	TSharedPtr<SNumericEntryBox<float>> mpWidgetInputValue;
+
 	FUtilityActionInput mData;
 
 	FOnActionDelete mOnDelete;
 	FOnActionInputCommitted mOnValueCommitted;
 
+	TOptional<float> GetInputValue() const;
 	void OnDelete();
 	void OnChangedBlackboardKey(FUtilityActionEntry const &key);
 	void OnCommittedInputValue(float value, ETextCommit::Type type);

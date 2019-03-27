@@ -3,12 +3,13 @@
 
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "SUtilityActionInput.h"
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_SUtilityAction"
 
-const FText SUtilityAction::TextCreateActionLabel = LOCTEXT("UtilityTreeWizard_CreateAction", "Create Action");
+const FText SUtilityAction::TextActionNameLabel = LOCTEXT("UtilityTreeWizard_CreateAction", "Action Name");
 
 void SUtilityAction::Construct(const FArguments& InArgs)
 {
@@ -17,6 +18,9 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 	this->mOnChanged = InArgs._OnChanged;
 
 	int32 index = InArgs._Index.Get();
+
+	this->mDetails.mName = FName(*FText::FormatNamed(FText::FromString(TEXT("Action {index}")), TEXT("index"), index).ToString());
+
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -26,7 +30,19 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 			.VAlign(VAlign_Top)
 			.AutoHeight()
 			[
-				SNew(STextBlock).Text(SUtilityAction::TextCreateActionLabel)
+				SNew(SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew(STextBlock).Text(SUtilityAction::TextActionNameLabel)
+					]
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew(SEditableTextBox)
+						.Text(FText::FromName(this->mDetails.mName))
+						.OnTextCommitted(FOnTextCommitted::CreateRaw(this, &SUtilityAction::OnNameCommitted))
+					]
 			]
 	
 			+SVerticalBox::Slot()
@@ -55,6 +71,12 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 			]
 
 	];
+}
+
+void SUtilityAction::OnNameCommitted(FText const &text, ETextCommit::Type commitType)
+{
+	this->mDetails.mName = FName(*text.ToString());
+	this->mOnChanged.ExecuteIfBound(this->mIndex, this->mDetails);
 }
 
 void SUtilityAction::AddInputField()
