@@ -18,8 +18,9 @@ public class UtilityAiEditor : ModuleRules
         PrivateIncludePaths.AddRange(
             new string[] {
 				// ... add other private include paths required here ...
-				"UtilityAi/Private",
 				"UtilityAiEditor/Private",
+                "Editor/GraphEditor/Private",
+                "Editor/AIGraph/Private",
             }
             );
 
@@ -46,6 +47,10 @@ public class UtilityAiEditor : ModuleRules
 
                 "Slate",
                 "SlateCore",
+
+                "UtilityAi",
+                "BehaviorTreeEditor",
+                "UnrealEd",
             }
             );
 

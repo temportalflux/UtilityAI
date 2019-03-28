@@ -14,6 +14,7 @@
 
 #include "BehaviorTreeGraph.h"
 #include "BehaviorTreeGraphNode_Composite.h"
+#include "EdGraph/EdGraph.h"
 
 // Data
 #include "SUtilityAction.h"
@@ -23,6 +24,9 @@
 #include "IContentBrowserSingleton.h"
 #include "Engine/Classes/Curves/CurveFloat.h"
 #include "UnrealEd/Classes/Factories/CurveFactory.h"
+
+#include "BTComposite_UtilitySelector.h"
+#include "BTComposite_UtilityNode.h"
 
 #include "UtilityAiEditor.h"
 
@@ -238,9 +242,17 @@ void UtilityTreeWizard::GenerateNodes()
 		return;
 	}
 	
-	auto graph = Cast<UBehaviorTreeGraph>(this->mpBehaviorTreeAsset->BTGraph);
+	auto graphEd = this->mpBehaviorTreeAsset->BTGraph;
+	//auto graph = Cast<UBehaviorTreeGraph>(this->mpBehaviorTreeAsset->BTGraph);
 	//NewObject<UBehaviorTreeGraphNode_Composite>();
 	//graph->AddNode(nullptr, false, false);
+
+	//UBehaviorTreeGraphNode* GraphNode = nullptr;
+
+	//auto cls = UBehaviorTreeGraphNode_Composite::StaticClass();
+	FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
+	//GraphNode = NodeBuilder.CreateNode();
+	//NodeBuilder.Finalize();
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mpBehaviorTreeAsset->GetName(),
