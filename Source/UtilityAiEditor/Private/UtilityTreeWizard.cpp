@@ -24,6 +24,7 @@
 #include "IContentBrowserSingleton.h"
 #include "Engine/Classes/Curves/CurveFloat.h"
 #include "UnrealEd/Classes/Factories/CurveFactory.h"
+#include "AssetRegistryModule.h"
 
 #include "BTComposite_UtilitySelector.h"
 #include "BTComposite_UtilityNode.h"
@@ -224,6 +225,20 @@ void UtilityTreeWizard::OnActionChanged(int32 const &index, FUtilityActionDetail
 	this->mUtilityTreeDetails.mActions[index] = data;
 }
 
+// TAKEN FROM: SCurveEditor
+UObject* CreateCurveObject(TSubclassOf<UCurveBase> CurveType, UObject* PackagePtr, FName& AssetName)
+{
+	UObject* NewObj = NULL;
+	auto CurveFactory = Cast<UCurveFactory>(NewObject<UFactory>(GetTransientPackage(), UCurveFactory::StaticClass()));
+	if (CurveFactory)
+	{
+		CurveFactory->CurveClass = CurveType;
+		NewObj = CurveFactory->FactoryCreateNew(CurveFactory->GetSupportedClass(), PackagePtr, AssetName, RF_Public | RF_Standalone, NULL, GWarn);
+	}
+	CurveFactory = NULL;
+	return NewObj;
+}
+
 void UtilityTreeWizard::GenerateNodes()
 {
 	if (this->mpWindow.IsValid())
@@ -250,9 +265,41 @@ void UtilityTreeWizard::GenerateNodes()
 	//UBehaviorTreeGraphNode* GraphNode = nullptr;
 
 	//auto cls = UBehaviorTreeGraphNode_Composite::StaticClass();
-	FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
+	//FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
 	//GraphNode = NodeBuilder.CreateNode();
 	//NodeBuilder.Finalize();
+
+	this->mpBehaviorTreeAsset->GetOuter();
+	FString DefaultAsset = FPackageName::GetLongPackagePath(this->mpBehaviorTreeAsset->GetOutermost()->GetName()) + TEXT("/");
+
+	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating curves in %s"), *DefaultAsset);
+
+	FName fileName = FName("GeneratedFloatCurve");
+
+	auto pkg = this->mpBehaviorTreeAsset->GetOutermost();
+	auto NewCurve = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), pkg, fileName));
+	//curve->MarkPackageDirty();
+	if (NewCurve)
+	{
+		// run through points of editor data and add to external curve
+		//CopyCurveData(&RuntimeCurve->EditorCurveData, &NewCurve->FloatCurve);
+
+		// Set the new object as the sole selection.
+		//USelection* SelectionSet = GEditor->GetSelectedObjects();
+		//SelectionSet->DeselectAll();
+		//SelectionSet->Select(NewCurve);
+		NewCurve->FloatCurve.AddKey(0, 0);
+		NewCurve->FloatCurve.AddKey(1, 1);
+
+		// Notify the asset registry
+		FAssetRegistryModule::AssetCreated(NewCurve);
+
+		// Mark the package dirty...
+		pkg->MarkPackageDirty();
+
+		// Make sure expected type of pointer passed to SetValue, so that it's not interpreted as a bool
+		//ExternalCurveHandle->SetValue(NewCurve);
+	}
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mpBehaviorTreeAsset->GetName(),
@@ -338,6 +385,8 @@ void UtilityTreeWizard::GenerateNodes()
 
 	GraphActionMenu->OnRequestRenameOnActionNode();
 	*/
+
+	this->mUtilityTreeDetails.mActions.Empty();
 }
 
 void UtilityTreeWizard::OnUserScrolled(float amount)
