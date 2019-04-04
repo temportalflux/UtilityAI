@@ -21,6 +21,7 @@ public class UtilityAiEditor : ModuleRules
 				"UtilityAiEditor/Private",
                 "Editor/GraphEditor/Private",
                 "Editor/AIGraph/Private",
+                "Editor/BehaviorTreeEditor/Private",
             }
             );
 
@@ -85,8 +86,7 @@ public class UtilityAiEditor : ModuleRules
                 "BehaviorTreeEditor",
                 "MainFrame",
             }
-            );
-
+        );
 
         DynamicallyLoadedModuleNames.AddRange(
             new string[]

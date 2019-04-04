@@ -8,8 +8,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SNumericEntryBox.h"
 #include "UtilityActionDetails.h"
-
-DECLARE_DELEGATE_OneParam(FOnActionDelete, FGuid const &)
+#include "SUtilityActionInputKeyCurvePoint.h"
 
 DECLARE_DELEGATE_TwoParams(FOnActionInputCommitted, FGuid const &, FUtilityActionInput const &)
 
@@ -21,20 +20,22 @@ class SUtilityActionInput
 {
 	static const FText TextLabelBlackboardKey;
 	
-	FGuid mId;
 	TSharedPtr<UBlackboardData> mpBlackboard;
 
-	TSharedPtr<SNumericEntryBox<float>> mpWidgetInputValue;
-
+	FGuid mId;
 	FUtilityActionInput mData;
+
+	TSharedPtr<SVerticalBox> mpWidgetBoxCurveKeys;
+	TMap<FGuid, TSharedPtr<SUtilityActionInputKeyCurvePoint>> mpWidgetCurveKeys;
 
 	FOnActionDelete mOnDelete;
 	FOnActionInputCommitted mOnValueCommitted;
 
-	TOptional<float> GetInputValue() const;
 	void OnDelete();
+	void AddCurveKey();
 	void OnChangedBlackboardKey(FUtilityActionEntry const &key);
-	void OnCommittedInputValue(float value, ETextCommit::Type type);
+	void OnValueCommittedCurveKey(FGuid const &id, FUtilityActionInputCurveKey const &value);
+	void RemoveCurveKey(FGuid const &id);
 
 public:
 

@@ -13,6 +13,7 @@ void SUtilityActionInput::Construct(const FArguments & InArgs)
 	this->mpBlackboard = InArgs._BlackboardAsset.Get();
 	this->mOnDelete = InArgs._OnDelete;
 	this->mOnValueCommitted = InArgs._OnValueCommitted;
+	this->mpWidgetCurveKeys.Empty();
 
 	// TODO: Utility Value (probablity)
 	//		low (25%), medium (50%), high (75%), definite (500%)
@@ -65,48 +66,58 @@ void SUtilityActionInput::Construct(const FArguments & InArgs)
 						.BlackboardAsset(this->mpBlackboard)
 						.OnChanged(FOnBlackboardEntryChanged::CreateRaw(this, &SUtilityActionInput::OnChangedBlackboardKey))
 					]
+			
+					+SVerticalBox::Slot()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Top)
+					.AutoHeight()
+					[
+						SNew(SButton)
+						.Text(LOCTEXT("AddCurveKey", "Add Curve Key"))
+						.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityActionInput::AddCurveKey))
+					]
 
 					+SVerticalBox::Slot()
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Top)
 					.AutoHeight()
 					[
-						SNew(SHorizontalBox)
-
-							+SHorizontalBox::Slot()
-							.HAlign(HAlign_Center)
-							.VAlign(VAlign_Top)
-							.AutoWidth()
-							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("InputValue", "Input Value"))
-							]
-
-							+SHorizontalBox::Slot()
-							.HAlign(HAlign_Center)
-							.VAlign(VAlign_Top)
-							.AutoWidth()
-							[
-								SAssignNew(mpWidgetInputValue, SNumericEntryBox<float>)
-								.Value(this, &SUtilityActionInput::GetInputValue)
-								.OnValueCommitted(SNumericEntryBox<float>::FOnValueCommitted::CreateRaw(
-									this, &SUtilityActionInput::OnCommittedInputValue))
-							]
-
+						SAssignNew(mpWidgetBoxCurveKeys, SVerticalBox)
 					]
 			]
 
 	];
 }
 
-TOptional<float> SUtilityActionInput::GetInputValue() const
-{
-	return this->mData.mInputValue;
-}
-
 void SUtilityActionInput::OnDelete()
 {
 	this->mOnDelete.ExecuteIfBound(this->mId);
+}
+
+void SUtilityActionInput::AddCurveKey()
+{
+	FGuid id = FGuid::NewGuid();
+	this->mData.mCurveKeys.Add(id, FUtilityActionInputCurveKey());
+
+	TSharedPtr<SUtilityActionInputKeyCurvePoint> widget;
+	this->mpWidgetBoxCurveKeys->AddSlot().AutoHeight()
+	[
+		SAssignNew(widget, SUtilityActionInputKeyCurvePoint)
+		.Id(id)
+		.OnDelete(FOnActionDelete::CreateRaw(this, &SUtilityActionInput::RemoveCurveKey))
+		.OnValueCommitted(FOnActionInputKeyCurvePointCommitted::CreateRaw(this, &SUtilityActionInput::OnValueCommittedCurveKey))
+	];
+	this->mpWidgetCurveKeys.Add(id, widget);
+
+	this->mOnValueCommitted.ExecuteIfBound(this->mId, this->mData);
+}
+
+void SUtilityActionInput::RemoveCurveKey(FGuid const &id)
+{
+	this->mpWidgetBoxCurveKeys->RemoveSlot(this->mpWidgetCurveKeys[id].ToSharedRef());
+	this->mpWidgetCurveKeys.Remove(id);
+	this->mData.mCurveKeys.Remove(id);
+	this->mOnValueCommitted.ExecuteIfBound(this->mId, this->mData);
 }
 
 void SUtilityActionInput::OnChangedBlackboardKey(FUtilityActionEntry const &key)
@@ -115,9 +126,9 @@ void SUtilityActionInput::OnChangedBlackboardKey(FUtilityActionEntry const &key)
 	this->mOnValueCommitted.ExecuteIfBound(this->mId, this->mData);
 }
 
-void SUtilityActionInput::OnCommittedInputValue(float value, ETextCommit::Type type)
+void SUtilityActionInput::OnValueCommittedCurveKey(FGuid const &id, FUtilityActionInputCurveKey const &value)
 {
-	mData.mInputValue = value;
+	this->mData.mCurveKeys[id] = value;
 	this->mOnValueCommitted.ExecuteIfBound(this->mId, this->mData);
 }
 

@@ -13,8 +13,11 @@
 #include "Widgets/Layout/SSpacer.h"
 
 #include "BehaviorTreeGraph.h"
+#include "BehaviorTreeGraphNode.h"
 #include "BehaviorTreeGraphNode_Composite.h"
 #include "EdGraph/EdGraph.h"
+#include "BehaviorTree/BTCompositeNode.h"
+#include "EdGraphSchema_BehaviorTree.h"
 
 // Data
 #include "SUtilityAction.h"
@@ -265,11 +268,11 @@ void UtilityTreeWizard::GenerateNodes()
 	//UBehaviorTreeGraphNode* GraphNode = nullptr;
 
 	//auto cls = UBehaviorTreeGraphNode_Composite::StaticClass();
-	//FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
-	//GraphNode = NodeBuilder.CreateNode();
+	//FGraphNodeCreator<UBehaviorTreeGraphNode> NodeBuilder(*graphEd);
+	//auto tmp = NodeBuilder.CreateNode();
 	//NodeBuilder.Finalize();
 
-	this->mpBehaviorTreeAsset->GetOuter();
+	/*
 	FString DefaultAsset = FPackageName::GetLongPackagePath(this->mpBehaviorTreeAsset->GetOutermost()->GetName()) + TEXT("/");
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating curves in %s"), *DefaultAsset);
@@ -300,23 +303,60 @@ void UtilityTreeWizard::GenerateNodes()
 		// Make sure expected type of pointer passed to SetValue, so that it's not interpreted as a bool
 		//ExternalCurveHandle->SetValue(NewCurve);
 	}
+	//*/
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mpBehaviorTreeAsset->GetName(),
 		*this->mpBehaviorTreeAsset->BlackboardAsset->GetName());
+
+	auto assetPackage = this->mpBehaviorTreeAsset->GetOutermost();
 	for (auto const action : actions)
 	{
 		FName const actionName = action.mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
+
+		// Create the asset
+		FName curveAssetFileName = FName(*(this->mpBehaviorTreeAsset->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
+		auto curveAsset = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), assetPackage, curveAssetFileName));
+		if (!curveAsset)
+		{
+			UE_LOG(LogUtilityAiEditor, Log, TEXT("Could not generate curve asset %s for action %s."), *curveAssetFileName.ToString(), *actionName.ToString());
+			continue;
+		}
+
+		// Create the node
+
 		for (auto const actionInputPair : action.mInputs)
 		{
 			auto const actionInputValue = actionInputPair.Value;
-			UE_LOG(LogUtilityAiEditor, Log, TEXT("%s|%s: %.2f"), *actionName.ToString(),
-				*actionInputValue.mBlackboardKeyEntry.mName.ToString(),
-				actionInputValue.mInputValue
+			UE_LOG(LogUtilityAiEditor, Log, TEXT("%s|%s"), *actionName.ToString(),
+				*actionInputValue.mBlackboardKeyEntry.mName.ToString()
 			);
+
+			// Load points into the asset
+			auto curvePointMap = actionInputValue.mCurveKeys;
+
+			TArray<FUtilityActionInputCurveKey> curveKeys;
+			curvePointMap.GenerateValueArray(curveKeys);
+			for (auto const curveKey : curveKeys)
+			{
+				auto handle = curveAsset->FloatCurve.AddKey(curveKey.input, curveKey.output);
+				curveAsset->FloatCurve.Keys[curveAsset->FloatCurve.GetIndexSafe(handle)].InterpMode = ERichCurveInterpMode::RCIM_Cubic;
+			}
+
 		}
+
+		// Notify the asset registry
+		FAssetRegistryModule::AssetCreated(curveAsset);
+
+		// Link asset into node
+
+		// Update graph
+
 	}
+
+	// Mark the package dirty...
+	assetPackage->MarkPackageDirty();
 
 	//IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
 	//IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
