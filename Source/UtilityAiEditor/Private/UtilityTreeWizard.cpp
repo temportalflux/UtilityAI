@@ -269,23 +269,30 @@ void UtilityTreeWizard::GenerateNodes()
 
 	//auto cls = UBehaviorTreeGraphNode_Composite::StaticClass();
 
-	//FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
-	//auto tmp = NodeBuilder.CreateNode();
-	UBehaviorTreeGraphNode_Composite *node = graphEd->CreateIntermediateNode<UBehaviorTreeGraphNode_Composite>();
+	FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
+	auto tmp = NodeBuilder.CreateNode();
+	//UBehaviorTreeGraphNode_Composite *node = graphEd->CreateIntermediateNode<UBehaviorTreeGraphNode_Composite>();
 	
 	// Populate
 	//node->NodeInstance
 	//node->InitializeInstance();
 
-	//NodeBuilder.Finalize();
-	{
+
+	tmp->NodePosX = 50;
+	tmp->NodePosY = 50;
+	auto inst = NewObject<UBTComposite_UtilitySelector>();
+	inst->NodeName = TEXT("GenNodeSelector");
+	tmp->NodeInstance = inst;
+
+	NodeBuilder.Finalize();
+	/*{
 		node->CreateNewGuid();
 		node->PostPlacedNewNode();
 		if (node->Pins.Num() == 0)
 		{
 			node->AllocateDefaultPins();
 		}
-	}
+	}*/
 
 	/*
 	FString DefaultAsset = FPackageName::GetLongPackagePath(this->mpBehaviorTreeAsset->GetOutermost()->GetName()) + TEXT("/");

@@ -20,9 +20,9 @@ public class UtilityAiEditor : ModuleRules
             new string[] {
 				// ... add other private include paths required here ...
 				"UtilityAiEditor/Private",
-                "C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/GraphEditor/Private",
-                "C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/AIGraph/Private",
-                "C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/BehaviorTreeEditor/Private",
+                //"C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/GraphEditor/Private",
+                //"C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/AIGraph/Private",
+                //"C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/BehaviorTreeEditor/Private",
             }
             );
 
