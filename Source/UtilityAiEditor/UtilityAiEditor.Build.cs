@@ -14,14 +14,15 @@ public class UtilityAiEditor : ModuleRules
             }
             );
 
+        
 
         PrivateIncludePaths.AddRange(
             new string[] {
 				// ... add other private include paths required here ...
 				"UtilityAiEditor/Private",
-                "Editor/GraphEditor/Private",
-                "Editor/AIGraph/Private",
-                "Editor/BehaviorTreeEditor/Private",
+                "C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/GraphEditor/Private",
+                "C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/AIGraph/Private",
+                "C:/Program Files/Epic Games/UE_4.20/Engine/Source/Editor/BehaviorTreeEditor/Private",
             }
             );
 
@@ -40,18 +41,32 @@ public class UtilityAiEditor : ModuleRules
             {
                 "Core",
 				// ... add other public dependencies that you statically link with here ...
-				"CoreUObject",
+                "Projects",
+                "CoreUObject",
+                "LevelEditor",
+                "ApplicationCore",
                 "Engine",
-
-                "AIModule",
-                "GameplayTasks",
-
+                "RenderCore",
+                "InputCore",
                 "Slate",
                 "SlateCore",
-
-                "UtilityAi",
-                "BehaviorTreeEditor",
+                "EditorStyle",
                 "UnrealEd",
+                "AudioEditor",
+                "MessageLog",
+                "GraphEditor",
+                "Kismet",
+                "KismetWidgets",
+                "PropertyEditor",
+                "AnimGraph",
+                "BlueprintGraph",
+                "AIGraph",
+                "AIModule",
+                "ClassViewer",
+                "BehaviorTreeEditor",
+                "MainFrame",
+                "AIModule",
+                "UtilityAi",
             }
             );
 

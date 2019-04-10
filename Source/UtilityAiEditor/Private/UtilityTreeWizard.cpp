@@ -268,9 +268,24 @@ void UtilityTreeWizard::GenerateNodes()
 	//UBehaviorTreeGraphNode* GraphNode = nullptr;
 
 	//auto cls = UBehaviorTreeGraphNode_Composite::StaticClass();
-	//FGraphNodeCreator<UBehaviorTreeGraphNode> NodeBuilder(*graphEd);
+
+	//FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
 	//auto tmp = NodeBuilder.CreateNode();
+	UBehaviorTreeGraphNode_Composite *node = graphEd->CreateIntermediateNode<UBehaviorTreeGraphNode_Composite>();
+	
+	// Populate
+	//node->NodeInstance
+	//node->InitializeInstance();
+
 	//NodeBuilder.Finalize();
+	{
+		node->CreateNewGuid();
+		node->PostPlacedNewNode();
+		if (node->Pins.Num() == 0)
+		{
+			node->AllocateDefaultPins();
+		}
+	}
 
 	/*
 	FString DefaultAsset = FPackageName::GetLongPackagePath(this->mpBehaviorTreeAsset->GetOutermost()->GetName()) + TEXT("/");
