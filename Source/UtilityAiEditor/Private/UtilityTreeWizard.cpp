@@ -262,78 +262,69 @@ void UtilityTreeWizard::GenerateNodes()
 	
 	auto graphEd = this->mpBehaviorTreeAsset->BTGraph;
 
-	/*
-	FString DefaultAsset = FPackageName::GetLongPackagePath(this->mpBehaviorTreeAsset->GetOutermost()->GetName()) + TEXT("/");
-
-	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating curves in %s"), *DefaultAsset);
-
-	FName fileName = FName("GeneratedFloatCurve");
-
-	auto pkg = this->mpBehaviorTreeAsset->GetOutermost();
-	auto NewCurve = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), pkg, fileName));
-	//curve->MarkPackageDirty();
-	if (NewCurve)
+	UBehaviorTreeGraphNode_Composite* graphNode_selector;
+	// Create the root selector node
 	{
-		// run through points of editor data and add to external curve
-		//CopyCurveData(&RuntimeCurve->EditorCurveData, &NewCurve->FloatCurve);
+		FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
+		graphNode_selector = NodeBuilder.CreateNode();
 
-		// Set the new object as the sole selection.
-		//USelection* SelectionSet = GEditor->GetSelectedObjects();
-		//SelectionSet->DeselectAll();
-		//SelectionSet->Select(NewCurve);
-		NewCurve->FloatCurve.AddKey(0, 0);
-		NewCurve->FloatCurve.AddKey(1, 1);
+		graphNode_selector->NodePosX = 50;
+		graphNode_selector->NodePosY = 50;
 
-		// Notify the asset registry
-		FAssetRegistryModule::AssetCreated(NewCurve);
+		auto utilityNode_selector = NewObject<UBTComposite_UtilitySelector>();
+		utilityNode_selector->NodeName = TEXT("Utility Action Selector");
+		graphNode_selector->NodeInstance = utilityNode_selector;
 
-		// Mark the package dirty...
-		pkg->MarkPackageDirty();
-
-		// Make sure expected type of pointer passed to SetValue, so that it's not interpreted as a bool
-		//ExternalCurveHandle->SetValue(NewCurve);
+		NodeBuilder.Finalize();
 	}
-	//*/
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mpBehaviorTreeAsset->GetName(),
 		*this->mpBehaviorTreeAsset->BlackboardAsset->GetName());
 
-	FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
-	auto graphNode_selector = NodeBuilder.CreateNode();
-
-	graphNode_selector->NodePosX = 50;
-	graphNode_selector->NodePosY = 50;
-
-	auto utilityNode_selector = NewObject<UBTComposite_UtilitySelector>();
-	utilityNode_selector->NodeName = TEXT("Utility Action Selector");
-	graphNode_selector->NodeInstance = utilityNode_selector;
-
-	NodeBuilder.Finalize();
-
 	auto assetPackage = this->mpBehaviorTreeAsset->GetOutermost();
+
+	TArray<UBehaviorTreeGraphNode_Composite*> utilityActionNodes;
 	for (auto const action : actions)
 	{
 		FName const actionName = action.mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
 
-		// Create the asset
-		FName curveAssetFileName = FName(*(this->mpBehaviorTreeAsset->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
-		auto curveAsset = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), assetPackage, curveAssetFileName));
-		if (!curveAsset)
-		{
-			UE_LOG(LogUtilityAiEditor, Log, TEXT("Could not generate curve asset %s for action %s."), *curveAssetFileName.ToString(), *actionName.ToString());
-			continue;
-		}
+		// Create the graph node
+		FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
+		auto graphNode_composite = NodeBuilder.CreateNode();
+		graphNode_composite->NodePosX = 50;
+		graphNode_composite->NodePosY = 50;
+		
+		// Create the utility action node instance
+		auto utilityNode_action = NewObject<UBTComposite_UtilityNode>();
+		utilityNode_action->NodeName = actionName.ToString();
 
-		// Create the node
+		// Create the array of inputs for the action
+		utilityNode_action->Inputs.Empty();
 
+		// Iterate through all inputs and add them to the node
 		for (auto const actionInputPair : action.mInputs)
 		{
 			auto const actionInputValue = actionInputPair.Value;
 			UE_LOG(LogUtilityAiEditor, Log, TEXT("%s|%s"), *actionName.ToString(),
 				*actionInputValue.mBlackboardKeyEntry.mName.ToString()
 			);
+
+			// Create the input that will be saved into the node
+			auto actionInput = FUtilityInput();
+			// Create the blackboard key selector
+			actionInput.Key = FBlackboardKeySelector();
+			actionInput.Key.SelectedKeyName = actionInputValue.mBlackboardKeyEntry.mName;
+
+			// Create the curve asset for the values in this input
+			FName curveAssetFileName = FName(*(this->mpBehaviorTreeAsset->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
+			auto curveAsset = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), assetPackage, curveAssetFileName));
+			if (!curveAsset)
+			{
+				UE_LOG(LogUtilityAiEditor, Log, TEXT("Could not generate curve asset %s for action %s."), *curveAssetFileName.ToString(), *actionName.ToString());
+				continue;
+			}
 
 			// Load points into the asset
 			auto curvePointMap = actionInputValue.mCurveKeys;
@@ -346,15 +337,22 @@ void UtilityTreeWizard::GenerateNodes()
 				curveAsset->FloatCurve.Keys[curveAsset->FloatCurve.GetIndexSafe(handle)].InterpMode = ERichCurveInterpMode::RCIM_Cubic;
 			}
 
+			// Notify the asset registry
+			FAssetRegistryModule::AssetCreated(curveAsset);
+
+			// Link the asset into the node
+			actionInput.Curve = curveAsset;
+
+			// Save the blackboard key / curve asset pair into the node
+			utilityNode_action->Inputs.Add(actionInput);
 		}
 
-		// Notify the asset registry
-		FAssetRegistryModule::AssetCreated(curveAsset);
-
-		// Link asset into node
-
 		// Update graph
-
+		graphNode_composite->NodeInstance = utilityNode_action;
+		NodeBuilder.Finalize();
+		
+		// Link utility action node with its parent (the selector node)
+		graphNode_selector->AddSubNode(graphNode_composite, graphEd);
 	}
 
 	// Mark the package dirty...
