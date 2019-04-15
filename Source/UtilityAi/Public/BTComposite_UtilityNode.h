@@ -16,10 +16,10 @@ struct FUtilityInput
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = UtilityAI)
 		FBlackboardKeySelector Key;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = UtilityAI)
 		UCurveFloat* Curve;
 
 };
@@ -34,10 +34,10 @@ class UTILITYAI_API UBTComposite_UtilityNode : public UBTCompositeNode
 
 public:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = UtilityAI)
 		TArray<FUtilityInput> Inputs;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = UtilityAI)
 		bool CanExecuteUtilityLTEZero;
 	
 public:

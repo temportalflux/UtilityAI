@@ -1,8 +1,8 @@
 #include "UtilityTreeWizard.h"
 
 // Window
-#include "IMainFrameModule.h"
-#include "SlateApplication.h"
+#include "Interfaces/IMainFrameModule.h"
+#include "Framework/Application/SlateApplication.h"
 
 // Slate UI
 #include "Widgets/Input/SButton.h"
@@ -261,38 +261,6 @@ void UtilityTreeWizard::GenerateNodes()
 	}
 	
 	auto graphEd = this->mpBehaviorTreeAsset->BTGraph;
-	//auto graph = Cast<UBehaviorTreeGraph>(this->mpBehaviorTreeAsset->BTGraph);
-	//NewObject<UBehaviorTreeGraphNode_Composite>();
-	//graph->AddNode(nullptr, false, false);
-
-	//UBehaviorTreeGraphNode* GraphNode = nullptr;
-
-	//auto cls = UBehaviorTreeGraphNode_Composite::StaticClass();
-
-	FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
-	auto tmp = NodeBuilder.CreateNode();
-	//UBehaviorTreeGraphNode_Composite *node = graphEd->CreateIntermediateNode<UBehaviorTreeGraphNode_Composite>();
-	
-	// Populate
-	//node->NodeInstance
-	//node->InitializeInstance();
-
-
-	tmp->NodePosX = 50;
-	tmp->NodePosY = 50;
-	auto inst = NewObject<UBTComposite_UtilitySelector>();
-	inst->NodeName = TEXT("GenNodeSelector");
-	tmp->NodeInstance = inst;
-
-	NodeBuilder.Finalize();
-	/*{
-		node->CreateNewGuid();
-		node->PostPlacedNewNode();
-		if (node->Pins.Num() == 0)
-		{
-			node->AllocateDefaultPins();
-		}
-	}*/
 
 	/*
 	FString DefaultAsset = FPackageName::GetLongPackagePath(this->mpBehaviorTreeAsset->GetOutermost()->GetName()) + TEXT("/");
@@ -330,6 +298,18 @@ void UtilityTreeWizard::GenerateNodes()
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mpBehaviorTreeAsset->GetName(),
 		*this->mpBehaviorTreeAsset->BlackboardAsset->GetName());
+
+	FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
+	auto graphNode_selector = NodeBuilder.CreateNode();
+
+	graphNode_selector->NodePosX = 50;
+	graphNode_selector->NodePosY = 50;
+
+	auto utilityNode_selector = NewObject<UBTComposite_UtilitySelector>();
+	utilityNode_selector->NodeName = TEXT("Utility Action Selector");
+	graphNode_selector->NodeInstance = utilityNode_selector;
+
+	NodeBuilder.Finalize();
 
 	auto assetPackage = this->mpBehaviorTreeAsset->GetOutermost();
 	for (auto const action : actions)

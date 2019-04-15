@@ -1,7 +1,7 @@
 #include "SAssetSelectorBlackboardData.h"
 #include "UtilityAiEditor.h"
 
-#include "SlateApplication.h"
+#include "Framework/Application/SlateApplication.h"
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_AssetSelectorBlackboardData"
 

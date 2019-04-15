@@ -12,8 +12,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "IMainFrameModule.h"
-#include "SlateApplication.h"
+#include "Framework/Application/SlateApplication.h"
 #include "DetailLayoutBuilder.h"
 
 #include "UtilityTreeWizard.h"
