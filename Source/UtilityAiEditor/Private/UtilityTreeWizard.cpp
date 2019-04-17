@@ -36,6 +36,8 @@
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_UtilityAiWizard"
 
+//#define UTILITYAI_UPDATEDUE
+
 void OpenWindow(TSharedRef<SWindow> window)
 {
 	//IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
@@ -262,6 +264,7 @@ void UtilityTreeWizard::GenerateNodes()
 	
 	auto graphEd = this->mpBehaviorTreeAsset->BTGraph;
 
+#ifdef UTILITYAI_UPDATEDUE
 	UBehaviorTreeGraphNode_Composite* graphNode_selector;
 	// Create the root selector node
 	{
@@ -277,6 +280,7 @@ void UtilityTreeWizard::GenerateNodes()
 
 		NodeBuilder.Finalize();
 	}
+#endif
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mpBehaviorTreeAsset->GetName(),
@@ -290,6 +294,7 @@ void UtilityTreeWizard::GenerateNodes()
 		FName const actionName = action.mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
 
+#ifdef UTILITYAI_UPDATEDUE
 		// Create the graph node
 		FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
 		auto graphNode_composite = NodeBuilder.CreateNode();
@@ -302,6 +307,7 @@ void UtilityTreeWizard::GenerateNodes()
 
 		// Create the array of inputs for the action
 		utilityNode_action->Inputs.Empty();
+#endif
 
 		// Iterate through all inputs and add them to the node
 		for (auto const actionInputPair : action.mInputs)
@@ -343,16 +349,20 @@ void UtilityTreeWizard::GenerateNodes()
 			// Link the asset into the node
 			actionInput.Curve = curveAsset;
 
+#ifdef UTILITYAI_UPDATEDUE
 			// Save the blackboard key / curve asset pair into the node
 			utilityNode_action->Inputs.Add(actionInput);
+#endif
 		}
 
+#ifdef UTILITYAI_UPDATEDUE
 		// Update graph
 		graphNode_composite->NodeInstance = utilityNode_action;
 		NodeBuilder.Finalize();
 		
 		// Link utility action node with its parent (the selector node)
 		graphNode_selector->AddSubNode(graphNode_composite, graphEd);
+#endif
 	}
 
 	// Mark the package dirty...
@@ -435,3 +445,7 @@ void UtilityTreeWizard::OnUserScrolled(float amount)
 }
 
 #undef LOCTEXT_NAMESPACE
+
+#ifdef UTILITYAI_UPDATEDUE
+#undef UTILITYAI_UPDATEDUE
+#endif
