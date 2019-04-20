@@ -26,7 +26,7 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 		SNew(SVerticalBox)
 
 			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
+			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Top)
 			.AutoHeight()
 			[
@@ -46,7 +46,7 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 			]
 	
 			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
+			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Top)
 			.AutoHeight()
 			[
@@ -56,18 +56,11 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 			]
 
 			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
+			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Top)
 			.AutoHeight()
 			[
-				SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SAssignNew(mpActionInputsBox, SVerticalBox)
-					]
+				SAssignNew(mpActionInputsBox, SVerticalBox)
 			]
 
 	];

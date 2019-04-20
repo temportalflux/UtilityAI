@@ -103,12 +103,12 @@ void UtilityTreeWizard::Open()
 			.ScrollBarAlwaysVisible(true)
 			.OnUserScrolled(FOnUserScrolled::CreateRaw(this, &UtilityTreeWizard::OnUserScrolled))
 			+ SScrollBox::Slot()
-			[CreateVerticalBoxFillWidth(
+			[//CreateVerticalBoxFillWidth(
 
 				SNew(SVerticalBox)
 
 					+SVerticalBox::Slot()
-					.HAlign(HAlign_Center)
+					.HAlign(HAlign_Fill)
 					.VAlign(VAlign_Top)
 					.AutoHeight()
 					[ CreateField(
@@ -118,7 +118,7 @@ void UtilityTreeWizard::Open()
 					) ]
 	
 					+SVerticalBox::Slot()
-					.HAlign(HAlign_Center)
+					.HAlign(HAlign_Fill)
 					.VAlign(VAlign_Top)
 					.AutoHeight()
 					[
@@ -151,14 +151,15 @@ void UtilityTreeWizard::Open()
 					]
 
 					+SVerticalBox::Slot()
-					.HAlign(HAlign_Center)
+					.HAlign(HAlign_Fill)
 					.VAlign(VAlign_Top)
 					.AutoHeight()
 					[
 						SAssignNew(mpWidgetSwitcher, SWidgetSwitcher)
 					]
 				
-			) ]
+			//)
+			]
 			/*
 				+ SVerticalBox::Slot()
 				.HAlign(HAlign_Left)
