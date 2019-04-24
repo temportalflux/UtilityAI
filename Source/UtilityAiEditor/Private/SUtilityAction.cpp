@@ -1,7 +1,6 @@
 #include "SUtilityAction.h"
 #include "UtilityAiEditor.h"
 
-#include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Text/STextBlock.h"
@@ -80,6 +79,7 @@ void SUtilityAction::AddInputField()
 
 	TSharedPtr<SWidget> tmp;
 	this->mpActionInputsBox->AddSlot()
+		.AutoHeight()
 	[
 		SAssignNew(tmp, SUtilityActionInput)
 		.Id(id)
@@ -87,6 +87,7 @@ void SUtilityAction::AddInputField()
 		.OnDelete(FOnActionDelete::CreateRaw(this, &SUtilityAction::RemoveInputField))
 		.OnValueCommitted(FOnActionInputCommitted::CreateRaw(this, &SUtilityAction::OnInputValueCommitted))
 	];
+
 	mInputWidgets.Add(id, tmp);
 
 	this->mOnChanged.ExecuteIfBound(this->mIndex, this->mDetails);

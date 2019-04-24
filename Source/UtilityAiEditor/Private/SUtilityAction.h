@@ -4,6 +4,7 @@
 #include "SlateFwd.h"
 #include "Framework/SlateDelegates.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
+#include "Widgets/SBoxPanel.h"
 #include "Widgets/SCompoundWidget.h"
 #include "UtilityActionDetails.h"
 
