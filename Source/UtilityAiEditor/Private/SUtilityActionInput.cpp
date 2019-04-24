@@ -100,7 +100,8 @@ void SUtilityActionInput::AddCurveKey()
 	this->mData.mCurveKeys.Add(id, FUtilityActionInputCurveKey());
 
 	TSharedPtr<SUtilityActionInputKeyCurvePoint> widget;
-	this->mpWidgetBoxCurveKeys->AddSlot().AutoHeight()
+	this->mpWidgetBoxCurveKeys->AddSlot()
+		.AutoHeight()
 	[
 		SAssignNew(widget, SUtilityActionInputKeyCurvePoint)
 		.Id(id)

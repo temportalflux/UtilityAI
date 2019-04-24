@@ -196,14 +196,25 @@ void UtilityTreeWizard::Open()
 
 void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 {
-	this->mpBehaviorTreeAsset = MakeShareable(Cast<UBehaviorTree>(asset.GetAsset()));
+	UBehaviorTree* treeRaw = Cast<UBehaviorTree>(asset.GetAsset());
+	TSharedPtr<UBehaviorTree> treePtr = MakeShareable(treeRaw);
+	TSharedRef<UBehaviorTree> treeRef(treeRaw);
+	//TWeakPtr<UBehaviorTree> treeWeak(treeRef);
+	//TWeakPtr<UBehaviorTree> treeWeak(TSharedRef<UBehaviorTree>(treeRaw));
 	
-	if (this->mpBehaviorTreeAsset->BlackboardAsset == nullptr)
+	//this->mpBehaviorTreeAsset = treeWeak;
+	this->mpBehaviorTreeAsset = TWeakPtr<UBehaviorTree>(TSharedRef<UBehaviorTree>(treeRaw));
+
+	if (!this->mpBehaviorTreeAsset.Pin().IsValid() || this->mpBehaviorTreeAsset.Pin()->BlackboardAsset == nullptr)
 	{
+		UE_LOG(LogUtilityAiEditor, Log, TEXT("No asset found for %s"), *asset.GetFullName());
 		return;
 	}
 
-	this->mUtilityTreeDetails.mpBlackboard = MakeShareable(this->mpBehaviorTreeAsset->BlackboardAsset);
+	//TSharedRef<UBlackboardData> blackboardRef(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset);
+	//TWeakPtr<UBlackboardData> blackboardWeak(blackboardRef);
+	//this->mUtilityTreeDetails.mpBlackboard = blackboardWeak;
+	this->mUtilityTreeDetails.mpBlackboard = TWeakPtr<UBlackboardData>(TSharedRef<UBlackboardData>(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset));
 	this->mpButtonFinish->SetEnabled(true);
 	this->mpButtonAddAction->SetEnabled(true);
 	this->AddAction();
@@ -258,12 +269,12 @@ void UtilityTreeWizard::GenerateNodes()
 
 	auto const actions = treeDetails.mActions;
 
-	if (this->mpBehaviorTreeAsset->BlackboardAsset == nullptr)
+	if (this->mpBehaviorTreeAsset.Pin()->BlackboardAsset == nullptr)
 	{
 		return;
 	}
 	
-	auto graphEd = this->mpBehaviorTreeAsset->BTGraph;
+	auto graphEd = this->mpBehaviorTreeAsset.Pin()->BTGraph;
 
 #ifdef UTILITYAI_UPDATEDUE
 	UBehaviorTreeGraphNode_Composite* graphNode_selector;
@@ -284,10 +295,10 @@ void UtilityTreeWizard::GenerateNodes()
 #endif
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
-		*this->mpBehaviorTreeAsset->GetName(),
-		*this->mpBehaviorTreeAsset->BlackboardAsset->GetName());
+		*this->mpBehaviorTreeAsset.Pin()->GetName(),
+		*this->mpBehaviorTreeAsset.Pin()->BlackboardAsset->GetName());
 
-	auto assetPackage = this->mpBehaviorTreeAsset->GetOutermost();
+	auto assetPackage = this->mpBehaviorTreeAsset.Pin()->GetOutermost();
 
 	TArray<UBehaviorTreeGraphNode_Composite*> utilityActionNodes;
 	for (auto const action : actions)
@@ -325,7 +336,7 @@ void UtilityTreeWizard::GenerateNodes()
 			actionInput.Key.SelectedKeyName = actionInputValue.mBlackboardKeyEntry.mName;
 
 			// Create the curve asset for the values in this input
-			FName curveAssetFileName = FName(*(this->mpBehaviorTreeAsset->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
+			FName curveAssetFileName = FName(*(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
 			auto curveAsset = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), assetPackage, curveAssetFileName));
 			if (!curveAsset)
 			{

@@ -15,7 +15,7 @@ DECLARE_DELEGATE_OneParam(FOnBlackboardEntryChanged, const FUtilityActionEntry&)
 class SBlackboardEntryInfo
 	: public SCompoundWidget
 {
-	TSharedPtr<UBlackboardData> mpBlackboard;
+	TWeakPtr<UBlackboardData> mpBlackboard;
 	FName mInputtedEntryName;
 	UBlackboardKeyType* mpInputtedEntryType;
 	FUtilityActionEntry mEntry;
@@ -37,7 +37,7 @@ public:
 		, _OnChanged(nullptr)
 	{}
 
-		SLATE_ATTRIBUTE(TSharedPtr<UBlackboardData>, BlackboardAsset)
+		SLATE_ATTRIBUTE(TWeakPtr<UBlackboardData>, BlackboardAsset)
 
 		SLATE_EVENT(FOnBlackboardEntryChanged, OnChanged)
 

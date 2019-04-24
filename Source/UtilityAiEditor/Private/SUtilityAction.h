@@ -21,7 +21,7 @@ class SUtilityAction
 	FUtilityActionDetails mDetails;
 
 	int32 mIndex;
-	TSharedPtr<UBlackboardData> mpBlackboard;
+	TWeakPtr<UBlackboardData> mpBlackboard;
 
 	TSharedPtr<SVerticalBox> mpActionInputsBox;
 	TMap<FGuid, TSharedPtr<SWidget>> mInputWidgets;
@@ -42,7 +42,7 @@ public:
 	{}
 
 		SLATE_ATTRIBUTE(int32, Index)
-		SLATE_ATTRIBUTE(TSharedPtr<UBlackboardData>, BlackboardAsset)
+		SLATE_ATTRIBUTE(TWeakPtr<UBlackboardData>, BlackboardAsset)
 
 		SLATE_EVENT(FOnUtilityActionChanged, OnChanged)
 

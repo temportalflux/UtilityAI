@@ -26,7 +26,7 @@ TSharedRef<SWidget> SSelectorBlackboardEntry::BuildSelectMenu()
 	);
 
 #if WITH_EDITORONLY_DATA
-	for (FBlackboardEntry entry : this->mpBlackboard->ParentKeys)
+	for (FBlackboardEntry entry : this->mpBlackboard.Pin()->ParentKeys)
 	{
 		menuBuilder.AddMenuEntry(
 			FText::FromName(entry.EntryName),
@@ -43,7 +43,7 @@ TSharedRef<SWidget> SSelectorBlackboardEntry::BuildSelectMenu()
 	}
 #endif
 
-	for (FBlackboardEntry entry : this->mpBlackboard->Keys)
+	for (FBlackboardEntry entry : this->mpBlackboard.Pin()->Keys)
 	{
 		menuBuilder.AddMenuEntry(
 			FText::FromName(entry.EntryName),

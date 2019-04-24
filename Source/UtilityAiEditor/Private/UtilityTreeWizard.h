@@ -10,7 +10,7 @@
 
 struct FUtilityTreeDetails
 {
-	TSharedPtr<UBlackboardData> mpBlackboard;
+	TWeakPtr<UBlackboardData> mpBlackboard;
 	TArray<FUtilityActionDetails> mActions;
 };
 
@@ -26,7 +26,7 @@ private:
 	TSharedPtr<SWidgetSwitcher> mpWidgetSwitcher;
 	TSharedPtr<SWindow> mpWindow;
 
-	TSharedPtr<UBehaviorTree> mpBehaviorTreeAsset;
+	TWeakPtr<UBehaviorTree> mpBehaviorTreeAsset;
 	FUtilityTreeDetails mUtilityTreeDetails;
 
 	void OnActionChanged(int32 const &index, FUtilityActionDetails const &data);
