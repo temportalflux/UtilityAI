@@ -15,7 +15,7 @@ DECLARE_DELEGATE(FOnClearSelection)
 class SSelectorBlackboardEntry
 	: public SCompoundWidget
 {
-	TWeakPtr<UBlackboardData> mpBlackboard;
+	UBlackboardData* mpBlackboard;
 
 	TSharedPtr<STextBlock> mpLabel;
 
@@ -33,7 +33,7 @@ public:
 		, _OnClearSelection()
 	{}
 
-		SLATE_ATTRIBUTE(TWeakPtr<UBlackboardData>, BlackboardAsset)
+		SLATE_ATTRIBUTE(UBlackboardData*, BlackboardAsset)
 
 		SLATE_EVENT(FOnSelectedEntry, OnSelection)
 		SLATE_EVENT(FOnClearSelection, OnClearSelection)

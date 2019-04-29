@@ -21,6 +21,7 @@
 
 // Data
 #include "SUtilityAction.h"
+#include "SWizardSidebar.h"
 
 // Assets
 #include "ContentBrowserModule.h"
@@ -33,6 +34,7 @@
 #include "BTComposite_UtilityNode.h"
 
 #include "UtilityAiEditor.h"
+#include "SActionListing.h"
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_UtilityAiWizard"
 
@@ -84,17 +86,14 @@ TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 	;
 }
 
-const FText UtilityTreeWizard::TextButtonFinish = LOCTEXT("UtilityTreeWizard_ButtonFinish", "Finish");
-const FText UtilityTreeWizard::TextButtonAddAction = LOCTEXT("UtilityTreeWizard_ButtonAddAction", "Add Action");
-
 void UtilityTreeWizard::Open()
 {
-	this->mUtilityTreeDetails.mpBlackboard = 0;
+	//this->mUtilityTreeDetails.mpBlackboard.Reset();
 
 	OpenWindow(
 		SAssignNew(mpWindow, SWindow)
 		.Title(FText::FromString(TEXT("Create Utility Tree")))
-		.ClientSize(FVector2D(400, 800))
+		.ClientSize(FVector2D(600, 800))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
@@ -103,143 +102,98 @@ void UtilityTreeWizard::Open()
 			.ScrollBarAlwaysVisible(true)
 			.OnUserScrolled(FOnUserScrolled::CreateRaw(this, &UtilityTreeWizard::OnUserScrolled))
 			+ SScrollBox::Slot()
-			[//CreateVerticalBoxFillWidth(
-
+			[
 				SNew(SVerticalBox)
 
+					// The is the header bar which prompts users to select a behavior tree (preferably the current asset that is open)
 					+SVerticalBox::Slot()
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Top)
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Fill)
 					.AutoHeight()
 					[ CreateField(
 						LOCTEXT("BlackboardAsset_Select", "Select Blackboard Asset"),
 						SAssignNew(mpBlackboardSelector, SAssetSelectorBlackboardData)
 						.OnAssetSelected(FOnAssetSelected::CreateRaw(this, &UtilityTreeWizard::OnBlackboardAssetSelected))
 					) ]
-	
-					+SVerticalBox::Slot()
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Top)
-					.AutoHeight()
-					[
-						SNew(SHorizontalBox)
-
-							+SHorizontalBox::Slot()
-							.HAlign(HAlign_Left)
-							.VAlign(VAlign_Center)
-							.AutoWidth()
-							[
-								SAssignNew(mpButtonFinish, SButton)
-								.IsEnabled(false)
-								.OnPressed(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::GenerateNodes))
-								.Content()
-								[ SNew(STextBlock).Text(TextButtonFinish) ]
-							]
-
-							+SHorizontalBox::Slot()
-							.HAlign(HAlign_Left)
-							.VAlign(VAlign_Center)
-							.AutoWidth()
-							[
-								SAssignNew(mpButtonAddAction, SButton)
-								.IsEnabled(false)
-								.OnPressed(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::AddAction))
-								.Content()
-								[ SNew(STextBlock).Text(TextButtonAddAction) ]
-							]
-
-					]
 
 					+SVerticalBox::Slot()
 					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Top)
-					.AutoHeight()
+					.VAlign(VAlign_Fill)
+					.FillHeight(1.0f)
 					[
-						SAssignNew(mpWidgetSwitcher, SWidgetSwitcher)
+						SAssignNew(mpContentPanel, SHorizontalBox)
 					]
-				
-			//)
 			]
-			/*
-				+ SVerticalBox::Slot()
-				.HAlign(HAlign_Left)
-				.VAlign(VAlign_Top)
-				[
-					SNew(SComboBox<TSharedPtr<FComboTest>>)
-						.OptionsSource(&Options)
-						.OnSelectionChanged_Lambda(
-							[&](TSharedPtr<FComboTest> Item, ESelectInfo::Type) {
-								CurrentItem = Item;
-								UpdateProperty();
-							}
-						)
-						.OnGenerateWidget_Lambda(
-							[&](TSharedPtr<FComboTest> Item) {
-								return SNew(STextBlock)
-									.Font(IDetailLayoutBuilder::GetDetailFont())
-									.Text(Item->Label);
-							}
-						)
-						.InitiallySelectedItem(CurrentItem)
-						[
-							SAssignNew(CurrentText, STextBlock)
-								.Font(IDetailLayoutBuilder::GetDetailFont())
-								.Text(CurrentItem->Label)
-						]
-				]
-				//*/
 		]
 	);
 
-	this->mpWidgetSwitcher->SetActiveWidgetIndex(INDEX_NONE);
 }
 
 void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 {
 	UBehaviorTree* treeRaw = Cast<UBehaviorTree>(asset.GetAsset());
-	TSharedPtr<UBehaviorTree> treePtr = MakeShareable(treeRaw);
-	TSharedRef<UBehaviorTree> treeRef(treeRaw);
+	//TSharedPtr<UBehaviorTree> treePtr = MakeShareable(treeRaw);
+	//TSharedRef<UBehaviorTree> treeRef(treeRaw);
 	//TWeakPtr<UBehaviorTree> treeWeak(treeRef);
 	//TWeakPtr<UBehaviorTree> treeWeak(TSharedRef<UBehaviorTree>(treeRaw));
 	
 	//this->mpBehaviorTreeAsset = treeWeak;
-	this->mpBehaviorTreeAsset = TWeakPtr<UBehaviorTree>(TSharedRef<UBehaviorTree>(treeRaw));
+	//this->mpBehaviorTreeAsset = TWeakPtr<UBehaviorTree>(TSharedRef<UBehaviorTree>(treeRaw));
 
-	if (!this->mpBehaviorTreeAsset.Pin().IsValid() || this->mpBehaviorTreeAsset.Pin()->BlackboardAsset == nullptr)
+	this->mUtilityTreeDetails.mpTree = treeRaw;
+
+	/*if (!this->mpBehaviorTreeAsset.Pin().IsValid() || this->mpBehaviorTreeAsset.Pin()->BlackboardAsset == nullptr)
 	{
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("No asset found for %s"), *asset.GetFullName());
 		return;
-	}
+	}*/
 
 	//TSharedRef<UBlackboardData> blackboardRef(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset);
 	//TWeakPtr<UBlackboardData> blackboardWeak(blackboardRef);
 	//this->mUtilityTreeDetails.mpBlackboard = blackboardWeak;
-	this->mUtilityTreeDetails.mpBlackboard = TWeakPtr<UBlackboardData>(TSharedRef<UBlackboardData>(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset));
-	this->mpButtonFinish->SetEnabled(true);
-	this->mpButtonAddAction->SetEnabled(true);
-	this->AddAction();
+	//this->mUtilityTreeDetails.mpBlackboard = TWeakPtr<UBlackboardData>(TSharedRef<UBlackboardData>(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset));
+	this->mUtilityTreeDetails.mpBlackboard = treeRaw->BlackboardAsset;
+	
+	this->mpContentPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.AutoWidth()
+		.Padding(20.0f)
+	[
+		SNew(SWizardSidebar)
+		.OnFinish(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::GenerateNodes))
+		.OnAddAction(FOnAddAction::CreateRaw(this, &UtilityTreeWizard::OnAddAction))
+		.OnEditAction(FOnEditAction::CreateRaw(this, &UtilityTreeWizard::OnEditAction))
+	];
+
+	this->mpContentPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.FillWidth(2.0f)
+	[
+		SAssignNew(mpWidgetSwitcher, SWidgetSwitcher)
+	];
+
+	this->mpWidgetSwitcher->SetActiveWidgetIndex(INDEX_NONE);
 }
 
-void UtilityTreeWizard::AddAction()
+void UtilityTreeWizard::OnAddAction(TSharedRef<FUtilityActionDetails> action)
 {
-	FUtilityActionDetails action;
-
-	int32 nextIndex = this->mpWidgetSwitcher->GetActiveWidgetIndex() + 1;
+	this->mUtilityTreeDetails.mActions.Add(action);
+	
 	this->mpWidgetSwitcher->AddSlot()
 	[
 		SNew(SUtilityAction)
-		.Index(nextIndex)
 		.BlackboardAsset(this->mUtilityTreeDetails.mpBlackboard)
-		.OnChanged(FOnUtilityActionChanged::CreateRaw(this, &UtilityTreeWizard::OnActionChanged))
-	];
-	this->mpWidgetSwitcher->SetActiveWidgetIndex(nextIndex);
-	
-	this->mUtilityTreeDetails.mActions.Add(action);
+		.Value(TWeakPtr<FUtilityActionDetails>(action))
+	];	
+
+	this->OnEditAction(action->mIndex);
 }
 
-void UtilityTreeWizard::OnActionChanged(int32 const &index, FUtilityActionDetails const &data)
+void UtilityTreeWizard::OnEditAction(int32 index)
 {
-	this->mUtilityTreeDetails.mActions[index] = data;
+	this->mpWidgetSwitcher->SetActiveWidgetIndex(index);
 }
 
 // TAKEN FROM: SCurveEditor
@@ -269,12 +223,12 @@ void UtilityTreeWizard::GenerateNodes()
 
 	auto const actions = treeDetails.mActions;
 
-	if (this->mpBehaviorTreeAsset.Pin()->BlackboardAsset == nullptr)
+	if (this->mUtilityTreeDetails.mpTree == nullptr || this->mUtilityTreeDetails.mpBlackboard == nullptr)
 	{
 		return;
 	}
 	
-	auto graphEd = this->mpBehaviorTreeAsset.Pin()->BTGraph;
+	auto graphEd = this->mUtilityTreeDetails.mpTree->BTGraph;
 
 #ifdef UTILITYAI_UPDATEDUE
 	UBehaviorTreeGraphNode_Composite* graphNode_selector;
@@ -295,15 +249,15 @@ void UtilityTreeWizard::GenerateNodes()
 #endif
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
-		*this->mpBehaviorTreeAsset.Pin()->GetName(),
-		*this->mpBehaviorTreeAsset.Pin()->BlackboardAsset->GetName());
+		*this->mUtilityTreeDetails.mpTree->GetName(),
+		*this->mUtilityTreeDetails.mpBlackboard->GetName());
 
-	auto assetPackage = this->mpBehaviorTreeAsset.Pin()->GetOutermost();
+	auto assetPackage = this->mUtilityTreeDetails.mpTree->GetOutermost();
 
 	TArray<UBehaviorTreeGraphNode_Composite*> utilityActionNodes;
 	for (auto const action : actions)
 	{
-		FName const actionName = action.mName;
+		FName const actionName = action->mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
 
 #ifdef UTILITYAI_UPDATEDUE
@@ -322,7 +276,7 @@ void UtilityTreeWizard::GenerateNodes()
 #endif
 
 		// Iterate through all inputs and add them to the node
-		for (auto const actionInputPair : action.mInputs)
+		for (auto const actionInputPair : action->mInputs)
 		{
 			auto const actionInputValue = actionInputPair.Value;
 			UE_LOG(LogUtilityAiEditor, Log, TEXT("%s|%s"), *actionName.ToString(),
@@ -336,13 +290,26 @@ void UtilityTreeWizard::GenerateNodes()
 			actionInput.Key.SelectedKeyName = actionInputValue.mBlackboardKeyEntry.mName;
 
 			// Create the curve asset for the values in this input
-			FName curveAssetFileName = FName(*(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
+			FName curveAssetFileName = FName(*(this->mUtilityTreeDetails.mpBlackboard->GetName() + TEXT("_") + actionName.ToString()));
 			auto curveAsset = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), assetPackage, curveAssetFileName));
 			if (!curveAsset)
 			{
 				UE_LOG(LogUtilityAiEditor, Log, TEXT("Could not generate curve asset %s for action %s."), *curveAssetFileName.ToString(), *actionName.ToString());
 				continue;
 			}
+			UE_LOG(LogUtilityAiEditor, Log,
+				TEXT("Generating curve named %s at %s, next outer is %i"),
+				*curveAssetFileName.ToString(),
+				*assetPackage->GetFullName(),
+				assetPackage->GetOuter() != nullptr
+			);
+			if (assetPackage->GetOuter())
+			UE_LOG(LogUtilityAiEditor, Log,
+				TEXT("Generating curve named %s at %s, next outer is %i"),
+				*curveAssetFileName.ToString(),
+				*assetPackage->GetFullName(),
+				*assetPackage->GetOuter()->GetFullName()
+			);
 
 			// Load points into the asset
 			auto curvePointMap = actionInputValue.mCurveKeys;
@@ -379,75 +346,7 @@ void UtilityTreeWizard::GenerateNodes()
 
 	// Mark the package dirty...
 	assetPackage->MarkPackageDirty();
-
-	//IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
-	//IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
-	//FContentBrowserModule &ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	//IContentBrowserSingleton &browser = ContentBrowserModule.Get();
-	//TSharedPtr<UCurveFloatFactory> factory = MakeShareable(NewObject<UCurveFloatFactory>());
-	//factory->FactoryCreateNew(UCurveFloat::StaticClass(), nullptr, "TestCurve", EObjectFlags::RF_NoFlags, nullptr, );
-	//browser.CreateNewAsset();
-
-	//FContentBr
-
-	/*
-	const FScopedTransaction Transaction(LOCTEXT("BlackboardEntryAddTransaction", "Add Blackboard Entry"));
-	BlackboardData->SetFlags(RF_Transactional);
-	BlackboardData->Modify();
-
-	// create a name for this new key
-	FString NewKeyName = InClass->GetDisplayNameText().ToString();
-	NewKeyName = NewKeyName.Replace(TEXT(" "), TEXT(""));
-	NewKeyName += TEXT("Key");
-
-	int32 IndexSuffix = -1;
-	auto DuplicateFunction = [&](const FBlackboardEntry& Key)
-	{
-		if(Key.EntryName.ToString() == NewKeyName)
-		{
-			IndexSuffix = FMath::Max(0, IndexSuffix);
-		}
-		if(Key.EntryName.ToString().StartsWith(NewKeyName))
-		{
-			const FString ExistingSuffix = Key.EntryName.ToString().RightChop(NewKeyName.Len());
-			if(ExistingSuffix.IsNumeric())
-			{
-				IndexSuffix = FMath::Max(FCString::Atoi(*ExistingSuffix) + 1, IndexSuffix);
-			}
-		}
-	};
-
-	// check for existing keys of the same name
-	for(const auto& Key : BlackboardData->Keys) { DuplicateFunction(Key); };
-	for(const auto& Key : BlackboardData->ParentKeys) { DuplicateFunction(Key); };
-
-	if(IndexSuffix != -1)
-	{
-		NewKeyName += FString::Printf(TEXT("%d"), IndexSuffix);
-	}
-
-	FBlackboardEntry Entry;
-	Entry.EntryName = FName(*NewKeyName);
-	Entry.KeyType = NewObject<UBlackboardKeyType>(BlackboardData, InClass);
-
-	BlackboardData->Keys.Add(Entry);
-
-	GraphActionMenu->RefreshAllActions(true);
-	OnBlackboardKeyChanged.ExecuteIfBound(BlackboardData, &BlackboardData->Keys.Last());
-
-	GraphActionMenu->SelectItemByName(Entry.EntryName, ESelectInfo::OnMouseClick);
-
-	// Mark newly created entry as 'new'
-	TArray< TSharedPtr<FEdGraphSchemaAction> > SelectedActions;
-	GraphActionMenu->GetSelectedActions(SelectedActions);
-	check(SelectedActions.Num() == 1);
-	check(SelectedActions[0]->GetTypeId() == FEdGraphSchemaAction_BlackboardEntry::StaticGetTypeId());
-	TSharedPtr<FEdGraphSchemaAction_BlackboardEntry> BlackboardEntryAction = StaticCastSharedPtr<FEdGraphSchemaAction_BlackboardEntry>(SelectedActions[0]);
-	BlackboardEntryAction->bIsNew = true;
-
-	GraphActionMenu->OnRequestRenameOnActionNode();
-	*/
-
+	
 	this->mUtilityTreeDetails.mActions.Empty();
 }
 

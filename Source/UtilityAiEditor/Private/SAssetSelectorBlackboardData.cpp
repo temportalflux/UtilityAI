@@ -17,10 +17,11 @@ void SAssetSelectorBlackboardData::OnSelectedAsset(const FAssetData& AssetData)
 {
 	//this->mpAsset = Cast<UBlackboardData>(AssetData.GetAsset());
 	this->mpAsset = Cast<UBehaviorTree>(AssetData.GetAsset());
+	this->mAssetData = AssetData;
 
 	this->mpWidgetAssetName->SetText(
 		this->mpAsset != nullptr
-		? FText::FromString(this->mpAsset->GetName())
+		? FText::FromName(AssetData.AssetName)
 		: TextSelectionPrompt
 	);
 	this->mpButtonConfirm->SetEnabled(this->mpAsset != nullptr);
@@ -35,7 +36,7 @@ void SAssetSelectorBlackboardData::OnConfirm()
 {
 	this->mpButtonSelector->SetEnabled(false);
 	this->mpButtonConfirm->SetEnabled(false);
-	this->mpOnAssetConfirmed.ExecuteIfBound(FAssetData(this->mpAsset));
+	this->mpOnAssetConfirmed.ExecuteIfBound(this->mAssetData);
 }
 
 TSharedRef<SWidget> SAssetSelectorBlackboardData::BuildSelectMenu()

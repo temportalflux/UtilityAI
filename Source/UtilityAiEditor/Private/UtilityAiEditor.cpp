@@ -51,7 +51,8 @@ void FUtilityAiEditorModule::StartupModule()
 			EExtensionHook::After,
 			ToolbarCommands,
 			FMenuExtensionDelegate::CreateLambda([](FMenuBuilder& Builder) {
-				Builder.AddMenuEntry(FToolbarCommands::Get().Action_UtilityTree_OpenWizard);
+				if (FToolbarCommands::Get().Action_UtilityTree_OpenWizard.IsValid())
+					Builder.AddMenuEntry(FToolbarCommands::Get().Action_UtilityTree_OpenWizard);
 			})
 		);
 		BTEditorModule.GetMenuExtensibilityManager()->AddExtender(this->mpBTMenuExtender);

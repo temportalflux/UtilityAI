@@ -12,13 +12,14 @@ const FText SUtilityAction::TextActionNameLabel = LOCTEXT("UtilityTreeWizard_Cre
 
 void SUtilityAction::Construct(const FArguments& InArgs)
 {
-	this->mIndex = InArgs._Index.Get();
+	this->mpDetails = InArgs._Value.Get();
 	this->mpBlackboard = InArgs._BlackboardAsset.Get();
-	this->mOnChanged = InArgs._OnChanged;
 
-	int32 index = InArgs._Index.Get();
-
-	this->mDetails.mName = FName(*FText::FormatNamed(FText::FromString(TEXT("Action {index}")), TEXT("index"), index).ToString());
+	this->mpDetails.Pin()->mName = FName(*FText::FormatNamed(
+		FText::FromString(TEXT("Action {index}")),
+		TEXT("index"),
+		this->mpDetails.Pin()->mIndex).ToString()
+	);
 
 	ChildSlot
 	[
@@ -39,7 +40,7 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 					.AutoWidth()
 					[
 						SNew(SEditableTextBox)
-						.Text(FText::FromName(this->mDetails.mName))
+						.Text(FText::FromName(this->mpDetails.Pin()->mName))
 						.OnTextCommitted(FOnTextCommitted::CreateRaw(this, &SUtilityAction::OnNameCommitted))
 					]
 			]
@@ -67,15 +68,19 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 
 void SUtilityAction::OnNameCommitted(FText const &text, ETextCommit::Type commitType)
 {
-	this->mDetails.mName = FName(*text.ToString());
-	this->mOnChanged.ExecuteIfBound(this->mIndex, this->mDetails);
+	if (!this->mpDetails.IsValid()) return;
+
+	this->mpDetails.Pin()->mName = FName(*text.ToString());
+	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
 }
 
 void SUtilityAction::AddInputField()
 {
+	if (!this->mpDetails.IsValid()) return;
+
 	FGuid id = FGuid::NewGuid();
 	
-	this->mDetails.mInputs.Add(id, FUtilityActionInput());
+	this->mpDetails.Pin()->mInputs.Add(id, FUtilityActionInput());
 
 	TSharedPtr<SWidget> tmp;
 	this->mpActionInputsBox->AddSlot()
@@ -90,22 +95,25 @@ void SUtilityAction::AddInputField()
 
 	mInputWidgets.Add(id, tmp);
 
-	this->mOnChanged.ExecuteIfBound(this->mIndex, this->mDetails);
+	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
 }
 
 void SUtilityAction::RemoveInputField(FGuid const &id)
 {
+	if (!this->mpDetails.IsValid()) return;
+
 	this->mpActionInputsBox->RemoveSlot(this->mInputWidgets[id].ToSharedRef());
 	this->mInputWidgets.Remove(id);
-	this->mDetails.mInputs.Remove(id);
+	this->mpDetails.Pin()->mInputs.Remove(id);
 
-	this->mOnChanged.ExecuteIfBound(this->mIndex, this->mDetails);
+	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
 }
 
 void SUtilityAction::OnInputValueCommitted(FGuid const &id, FUtilityActionInput const &data)
 {
-	this->mDetails.mInputs[id] = data;
-	this->mOnChanged.ExecuteIfBound(this->mIndex, this->mDetails);
+	if (!this->mpDetails.IsValid()) return;
+	this->mpDetails.Pin()->mInputs[id] = data;
+	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
 }
 
 #undef LOCTEXT_NAMESPACE

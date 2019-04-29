@@ -8,8 +8,6 @@
 #include "Widgets/SCompoundWidget.h"
 #include "UtilityActionDetails.h"
 
-DECLARE_DELEGATE_TwoParams(FOnUtilityActionChanged, int32 const &, FUtilityActionDetails const &)
-
 /**
 * All configurable data about a specific action
 */
@@ -18,15 +16,13 @@ class SUtilityAction
 {
 	static const FText TextActionNameLabel;
 
-	FUtilityActionDetails mDetails;
+	TWeakPtr<FUtilityActionDetails> mpDetails;
 
 	int32 mIndex;
-	TWeakPtr<UBlackboardData> mpBlackboard;
+	UBlackboardData* mpBlackboard;
 
 	TSharedPtr<SVerticalBox> mpActionInputsBox;
 	TMap<FGuid, TSharedPtr<SWidget>> mInputWidgets;
-
-	FOnUtilityActionChanged mOnChanged;
 
 	void OnNameCommitted(FText const &text, ETextCommit::Type commitType);
 	void AddInputField();
@@ -36,15 +32,12 @@ class SUtilityAction
 public:
 
 	SLATE_BEGIN_ARGS(SUtilityAction)
-		: _Index(0)
-		, _BlackboardAsset(nullptr)
-		, _OnChanged()
+		: _BlackboardAsset(nullptr)
+		, _Value(nullptr)
 	{}
 
-		SLATE_ATTRIBUTE(int32, Index)
-		SLATE_ATTRIBUTE(TWeakPtr<UBlackboardData>, BlackboardAsset)
-
-		SLATE_EVENT(FOnUtilityActionChanged, OnChanged)
+		SLATE_ATTRIBUTE(TWeakPtr<FUtilityActionDetails>, Value)
+		SLATE_ATTRIBUTE(UBlackboardData*, BlackboardAsset)
 
 	SLATE_END_ARGS()
 

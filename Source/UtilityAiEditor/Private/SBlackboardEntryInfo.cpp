@@ -91,7 +91,7 @@ void SBlackboardEntryInfo::OnEntryNameCommitted(FText const &text, ETextCommit::
 
 void SBlackboardEntryInfo::OnSelectKeyType(UClass* InClass)
 {
-	mEntry.mpType = this->mpInputtedEntryType = NewObject<UBlackboardKeyType>(mpBlackboard.Pin().Get(), InClass);
+	mEntry.mpType = this->mpInputtedEntryType = NewObject<UBlackboardKeyType>(mpBlackboard, InClass);
 	this->mOnChanged.ExecuteIfBound(this->mEntry);
 }
 

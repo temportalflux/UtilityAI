@@ -20,7 +20,7 @@ class SUtilityActionInput
 {
 	static const FText TextLabelBlackboardKey;
 	
-	TWeakPtr<UBlackboardData> mpBlackboard;
+	UBlackboardData* mpBlackboard;
 
 	FGuid mId;
 	FUtilityActionInput mData;
@@ -48,7 +48,7 @@ public:
 
 		SLATE_ATTRIBUTE(FGuid, Id)
 		
-		SLATE_ATTRIBUTE(TWeakPtr<UBlackboardData>, BlackboardAsset)
+		SLATE_ATTRIBUTE(UBlackboardData*, BlackboardAsset)
 
 		SLATE_EVENT(FOnActionDelete, OnDelete)
 

@@ -2,6 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "UtilityActionEntry.h"
+#include "Framework/SlateDelegates.h"
+
+struct FUtilityActionDetails;
+
+DECLARE_DELEGATE_OneParam(FOnActionChanged, TWeakPtr<FUtilityActionDetails>)
 
 struct FUtilityActionInputCurveKey
 {
@@ -17,6 +22,8 @@ struct FUtilityActionInput
 
 struct FUtilityActionDetails
 {
+	int32 mIndex;
 	FName mName;
 	TMap<FGuid, FUtilityActionInput> mInputs;
+	FOnActionChanged mOnChanged;
 };

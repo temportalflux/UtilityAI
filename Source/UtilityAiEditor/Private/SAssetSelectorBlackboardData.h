@@ -26,6 +26,7 @@ class SAssetSelectorBlackboardData
 
 	//UBlackboardData *mpAsset;
 	UBehaviorTree *mpAsset;
+	FAssetData mAssetData;
 	FOnAssetSelected mpOnAssetConfirmed;
 
 	TArray<const UClass*> mClasses;

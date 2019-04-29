@@ -13,7 +13,7 @@ TSharedRef<SWidget> SSelectorBlackboardEntry::BuildSelectMenu()
 {
 	FMenuBuilder menuBuilder(true, nullptr, nullptr, true);
 
-	if (!this->mpBlackboard.IsValid()) return menuBuilder.MakeWidget();
+	if (this->mpBlackboard == nullptr) return menuBuilder.MakeWidget();
 
 	FOnSelectedEntry onExecute = mOnSelection;
 	TSharedPtr<STextBlock> dropdownLabel = mpLabel;
@@ -26,7 +26,7 @@ TSharedRef<SWidget> SSelectorBlackboardEntry::BuildSelectMenu()
 	);
 
 #if WITH_EDITORONLY_DATA
-	for (FBlackboardEntry entry : this->mpBlackboard.Pin()->ParentKeys)
+	for (FBlackboardEntry entry : this->mpBlackboard->ParentKeys)
 	{
 		menuBuilder.AddMenuEntry(
 			FText::FromName(entry.EntryName),
@@ -43,7 +43,7 @@ TSharedRef<SWidget> SSelectorBlackboardEntry::BuildSelectMenu()
 	}
 #endif
 
-	for (FBlackboardEntry entry : this->mpBlackboard.Pin()->Keys)
+	for (FBlackboardEntry entry : this->mpBlackboard->Keys)
 	{
 		menuBuilder.AddMenuEntry(
 			FText::FromName(entry.EntryName),
