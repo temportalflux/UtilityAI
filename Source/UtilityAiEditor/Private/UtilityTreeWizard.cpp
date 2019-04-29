@@ -36,6 +36,8 @@
 #include "UtilityAiEditor.h"
 #include "SActionListing.h"
 
+#include "PackageTools.h"
+
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_UtilityAiWizard"
 
 //#define UTILITYAI_UPDATEDUE
@@ -131,29 +133,11 @@ void UtilityTreeWizard::Open()
 
 void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 {
-	UBehaviorTree* treeRaw = Cast<UBehaviorTree>(asset.GetAsset());
-	//TSharedPtr<UBehaviorTree> treePtr = MakeShareable(treeRaw);
-	//TSharedRef<UBehaviorTree> treeRef(treeRaw);
-	//TWeakPtr<UBehaviorTree> treeWeak(treeRef);
-	//TWeakPtr<UBehaviorTree> treeWeak(TSharedRef<UBehaviorTree>(treeRaw));
-	
-	//this->mpBehaviorTreeAsset = treeWeak;
-	//this->mpBehaviorTreeAsset = TWeakPtr<UBehaviorTree>(TSharedRef<UBehaviorTree>(treeRaw));
+	this->mPackageParent = asset.PackagePath;
 
+	UBehaviorTree* treeRaw = Cast<UBehaviorTree>(asset.GetAsset());
 	this->mUtilityTreeDetails.mpTree = treeRaw;
 
-	/*if (!this->mpBehaviorTreeAsset.Pin().IsValid() || this->mpBehaviorTreeAsset.Pin()->BlackboardAsset == nullptr)
-	{
-		UE_LOG(LogUtilityAiEditor, Log, TEXT("No asset found for %s"), *asset.GetFullName());
-		return;
-	}*/
-
-	//TSharedRef<UBlackboardData> blackboardRef(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset);
-	//TWeakPtr<UBlackboardData> blackboardWeak(blackboardRef);
-	//this->mUtilityTreeDetails.mpBlackboard = blackboardWeak;
-	//this->mUtilityTreeDetails.mpBlackboard = TWeakPtr<UBlackboardData>(TSharedRef<UBlackboardData>(this->mpBehaviorTreeAsset.Pin()->BlackboardAsset));
-	this->mUtilityTreeDetails.mpBlackboard = treeRaw->BlackboardAsset;
-	
 	this->mpContentPanel->AddSlot()
 		.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
@@ -184,7 +168,7 @@ void UtilityTreeWizard::OnAddAction(TSharedRef<FUtilityActionDetails> action)
 	this->mpWidgetSwitcher->AddSlot()
 	[
 		SNew(SUtilityAction)
-		.BlackboardAsset(this->mUtilityTreeDetails.mpBlackboard)
+		.BlackboardAsset(this->mUtilityTreeDetails.mpTree->BlackboardAsset)
 		.Value(TWeakPtr<FUtilityActionDetails>(action))
 	];	
 
@@ -223,7 +207,7 @@ void UtilityTreeWizard::GenerateNodes()
 
 	auto const actions = treeDetails.mActions;
 
-	if (this->mUtilityTreeDetails.mpTree == nullptr || this->mUtilityTreeDetails.mpBlackboard == nullptr)
+	if (this->mUtilityTreeDetails.mpTree == nullptr || this->mUtilityTreeDetails.mpTree->BlackboardAsset == nullptr)
 	{
 		return;
 	}
@@ -250,9 +234,9 @@ void UtilityTreeWizard::GenerateNodes()
 
 	UE_LOG(LogUtilityAiEditor, Log, TEXT("Creating utility tree in BT %s with blackboard %s"),
 		*this->mUtilityTreeDetails.mpTree->GetName(),
-		*this->mUtilityTreeDetails.mpBlackboard->GetName());
+		*this->mUtilityTreeDetails.mpTree->BlackboardAsset->GetName());
 
-	auto assetPackage = this->mUtilityTreeDetails.mpTree->GetOutermost();
+	//auto assetPackage = this->mUtilityTreeDetails.mpTree->GetOutermost();
 
 	TArray<UBehaviorTreeGraphNode_Composite*> utilityActionNodes;
 	for (auto const action : actions)
@@ -290,26 +274,16 @@ void UtilityTreeWizard::GenerateNodes()
 			actionInput.Key.SelectedKeyName = actionInputValue.mBlackboardKeyEntry.mName;
 
 			// Create the curve asset for the values in this input
-			FName curveAssetFileName = FName(*(this->mUtilityTreeDetails.mpBlackboard->GetName() + TEXT("_") + actionName.ToString()));
+			FName curveAssetFileName = FName(*(this->mUtilityTreeDetails.mpTree->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
+			const FString packageName = mPackageParent.ToString() + TEXT("/") + curveAssetFileName.ToString();
+			UPackage* assetPackage = CreatePackage(nullptr, *packageName);
+			
 			auto curveAsset = Cast<UCurveFloat>(CreateCurveObject(UCurveFloat::StaticClass(), assetPackage, curveAssetFileName));
 			if (!curveAsset)
 			{
 				UE_LOG(LogUtilityAiEditor, Log, TEXT("Could not generate curve asset %s for action %s."), *curveAssetFileName.ToString(), *actionName.ToString());
 				continue;
 			}
-			UE_LOG(LogUtilityAiEditor, Log,
-				TEXT("Generating curve named %s at %s, next outer is %i"),
-				*curveAssetFileName.ToString(),
-				*assetPackage->GetFullName(),
-				assetPackage->GetOuter() != nullptr
-			);
-			if (assetPackage->GetOuter())
-			UE_LOG(LogUtilityAiEditor, Log,
-				TEXT("Generating curve named %s at %s, next outer is %i"),
-				*curveAssetFileName.ToString(),
-				*assetPackage->GetFullName(),
-				*assetPackage->GetOuter()->GetFullName()
-			);
 
 			// Load points into the asset
 			auto curvePointMap = actionInputValue.mCurveKeys;
@@ -324,6 +298,9 @@ void UtilityTreeWizard::GenerateNodes()
 
 			// Notify the asset registry
 			FAssetRegistryModule::AssetCreated(curveAsset);
+
+			// Mark the package dirty...
+			assetPackage->MarkPackageDirty();
 
 			// Link the asset into the node
 			actionInput.Curve = curveAsset;
@@ -343,9 +320,6 @@ void UtilityTreeWizard::GenerateNodes()
 		graphNode_selector->AddSubNode(graphNode_composite, graphEd);
 #endif
 	}
-
-	// Mark the package dirty...
-	assetPackage->MarkPackageDirty();
 	
 	this->mUtilityTreeDetails.mActions.Empty();
 }

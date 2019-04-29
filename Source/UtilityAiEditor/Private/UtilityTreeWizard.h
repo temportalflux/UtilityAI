@@ -11,7 +11,6 @@
 struct FUtilityTreeDetails
 {
 	UBehaviorTree* mpTree;
-	UBlackboardData* mpBlackboard;
 	TArray<TSharedRef<FUtilityActionDetails>> mActions;
 };
 
@@ -19,6 +18,7 @@ class UtilityTreeWizard
 {
 private:
 	TSharedPtr<SAssetSelectorBlackboardData> mpBlackboardSelector;
+	FName mPackageParent;
 
 	TSharedPtr<SWindow> mpWindow;
 	TSharedPtr<SHorizontalBox> mpContentPanel;
