@@ -15,75 +15,69 @@ void SUtilityActionInput::Construct(const FArguments & InArgs)
 	this->mOnValueCommitted = InArgs._OnValueCommitted;
 	this->mpWidgetCurveKeys.Empty();
 
-	// TODO: Utility Value (probablity)
-	//		low (25%), medium (50%), high (75%), definite (500%)
-	// TODO: Curve Type
-	//		constant, smooth, ???
 	ChildSlot
 	[
 		SNew(SVerticalBox)
 
 			+SVerticalBox::Slot()
 			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Top)
+			.VAlign(VAlign_Fill)
 			.AutoHeight()
 			[
-				SNew(SHorizontalBox)
-			
-					+ SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SNew(STextBlock)
-						.Text(TextLabelBlackboardKey)
-					]
-			
-					+ SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SNew(SButton)
-						.Text(LOCTEXT("DeleteEntry", "Remove"))
-						.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityActionInput::OnDelete))
-					]
+				SNew(SButton)
+				.Text(LOCTEXT("DeleteEntry", "Remove Input"))
+				.ButtonColorAndOpacity(FSlateColor(FLinearColor(0.8, 0, 0)))
+				.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityActionInput::OnDelete))
 			]
 
 			+SVerticalBox::Slot()
 			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Top)
+			.VAlign(VAlign_Fill)
 			.AutoHeight()
 			[
-				SNew(SVerticalBox)
+				SNew(SBlackboardEntryInfo)
+				.Text(LOCTEXT("BlackboardKey", "Blackboard Key"))
+				.BlackboardAsset(this->mpBlackboard)
+				.OnChanged(FOnBlackboardEntryChanged::CreateRaw(this, &SUtilityActionInput::OnChangedBlackboardKey))
+			]
 
-					+SVerticalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoHeight()
+			+SVerticalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.AutoHeight()
+			[
+				SNew(SHorizontalBox)
+
+					+SHorizontalBox::Slot()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
+					.AutoWidth()
+					.Padding(5.0f)
 					[
-						SNew(SBlackboardEntryInfo)
-						.BlackboardAsset(this->mpBlackboard)
-						.OnChanged(FOnBlackboardEntryChanged::CreateRaw(this, &SUtilityActionInput::OnChangedBlackboardKey))
+						SNew(STextBlock)
+						.Text(LOCTEXT("CurveKeys", "Significant Values"))
 					]
-			
-					+SVerticalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoHeight()
+
+					+SHorizontalBox::Slot()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Fill)
+					.AutoWidth()
+					.Padding(5.0f)
 					[
 						SNew(SButton)
-						.Text(LOCTEXT("AddCurveKey", "Add Curve Key"))
+						.Text(LOCTEXT("AddCurveKey", "+ Point"))
 						.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityActionInput::AddCurveKey))
 					]
 
-					+SVerticalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoHeight()
-					[
-						SAssignNew(mpWidgetBoxCurveKeys, SVerticalBox)
-					]
+			]
+
+			+SVerticalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.AutoHeight()
+			.Padding(20.0f, 0, 0, 0)
+			[
+				SAssignNew(mpWidgetBoxCurveKeys, SVerticalBox)
 			]
 
 	];
@@ -101,6 +95,8 @@ void SUtilityActionInput::AddCurveKey()
 
 	TSharedPtr<SUtilityActionInputKeyCurvePoint> widget;
 	this->mpWidgetBoxCurveKeys->AddSlot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
 		.AutoHeight()
 	[
 		SAssignNew(widget, SUtilityActionInputKeyCurvePoint)
@@ -129,6 +125,8 @@ void SUtilityActionInput::OnChangedBlackboardKey(FUtilityActionEntry const &key)
 
 void SUtilityActionInput::OnValueCommittedCurveKey(FGuid const &id, FUtilityActionInputCurveKey const &value)
 {
+	if (!this->mData.mCurveKeys.Contains(id)) return;
+
 	this->mData.mCurveKeys[id] = value;
 	this->mOnValueCommitted.ExecuteIfBound(this->mId, this->mData);
 }

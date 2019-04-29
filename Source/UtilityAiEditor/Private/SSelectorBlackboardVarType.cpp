@@ -75,9 +75,9 @@ void SSelectorBlackboardVarType::Construct(const FArguments & InArgs)
 		SNew(SVerticalBox)
 
 		+ SVerticalBox::Slot()
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Top)
-		.AutoHeight()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.FillHeight(1.0f)
 		[
 			SAssignNew(mpSelector, SComboButton)
 			.OnGetMenuContent(FOnGetContent::CreateRaw(this,

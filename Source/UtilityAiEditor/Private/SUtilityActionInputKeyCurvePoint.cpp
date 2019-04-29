@@ -13,74 +13,62 @@ void SUtilityActionInputKeyCurvePoint::Construct(const FArguments & InArgs)
 
 	ChildSlot
 	[
-		SNew(SVerticalBox)
+		SNew(SHorizontalBox)
 
-			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Top)
-			.AutoHeight()
+			+ SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.AutoWidth()
+			.Padding(5.0f)
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("Remove", "Remove"))
+				.Text(LOCTEXT("Remove", "-"))
+				.ButtonColorAndOpacity(FSlateColor(FLinearColor(0.8, 0, 0)))
 				.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityActionInputKeyCurvePoint::OnRemovePressed))
 			]
 			
-			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Top)
-			.AutoHeight()
+			+SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			.Padding(5.0f)
 			[
-				SNew(SHorizontalBox)
+				SNew(STextBlock)
+				.Text(LOCTEXT("InputValue", "Input Value"))
+			]
 
-					+SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("InputValue", "Input Value"))
-					]
-
-					+SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SAssignNew(mpWidgetInput, SNumericEntryBox<float>)
-						.Value(this, &SUtilityActionInputKeyCurvePoint::GetValueInput)
-						.OnValueCommitted(SNumericEntryBox<float>::FOnValueCommitted::CreateRaw(
-							this, &SUtilityActionInputKeyCurvePoint::OnCommittedValueInput))
-					]
-
+			+SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.FillWidth(1.0f)
+			.Padding(5.0f)
+			[
+				SAssignNew(mpWidgetInput, SNumericEntryBox<float>)
+				.Value(this, &SUtilityActionInputKeyCurvePoint::GetValueInput)
+				.OnValueCommitted(SNumericEntryBox<float>::FOnValueCommitted::CreateRaw(
+					this, &SUtilityActionInputKeyCurvePoint::OnCommittedValueInput))
 			]
 	
-			+SVerticalBox::Slot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Top)
-			.AutoHeight()
+			+SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			.Padding(5.0f)
 			[
-				SNew(SHorizontalBox)
+				SNew(STextBlock)
+				.Text(LOCTEXT("OutputValue", "Utility Value"))
+			]
 
-					+SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("OutputValue", "Utility Value"))
-					]
-
-					+SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Top)
-					.AutoWidth()
-					[
-						SAssignNew(mpWidgetOutput, SNumericEntryBox<float>)
-						.Value(this, &SUtilityActionInputKeyCurvePoint::GetValueOutput)
-						.OnValueCommitted(SNumericEntryBox<float>::FOnValueCommitted::CreateRaw(
-							this, &SUtilityActionInputKeyCurvePoint::OnCommittedValueOutput))
-					]
-			
+			+SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.FillWidth(1.0f)
+			.Padding(5.0f)
+			[
+				SAssignNew(mpWidgetOutput, SNumericEntryBox<float>)
+				.Value(this, &SUtilityActionInputKeyCurvePoint::GetValueOutput)
+				.OnValueCommitted(SNumericEntryBox<float>::FOnValueCommitted::CreateRaw(
+					this, &SUtilityActionInputKeyCurvePoint::OnCommittedValueOutput))
 			]
 
 	];

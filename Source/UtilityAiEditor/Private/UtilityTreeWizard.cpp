@@ -36,8 +36,6 @@
 #include "UtilityAiEditor.h"
 #include "SActionListing.h"
 
-#include "PackageTools.h"
-
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_UtilityAiWizard"
 
 //#define UTILITYAI_UPDATEDUE
@@ -90,8 +88,6 @@ TSharedRef<SWidget> CreateField(FText label, TSharedRef<SWidget> input)
 
 void UtilityTreeWizard::Open()
 {
-	//this->mUtilityTreeDetails.mpBlackboard.Reset();
-
 	OpenWindow(
 		SAssignNew(mpWindow, SWindow)
 		.Title(FText::FromString(TEXT("Create Utility Tree")))
@@ -131,6 +127,19 @@ void UtilityTreeWizard::Open()
 
 }
 
+TSharedRef<FUtilityActionDetails> UtilityTreeWizard::GetUnusedAction()
+{
+	for (auto action : this->mUtilityTreeDetails.mActions)
+	{
+		if (!action->mShouldGenerate)
+			return action;
+	}
+	auto action = MakeShared<FUtilityActionDetails>();
+	action->mIndex = this->mUtilityTreeDetails.mActions.Num();
+	action->mShouldGenerate = true;
+	return action;
+}
+
 void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 {
 	this->mPackageParent = asset.PackagePath;
@@ -148,6 +157,7 @@ void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 		.OnFinish(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::GenerateNodes))
 		.OnAddAction(FOnAddAction::CreateRaw(this, &UtilityTreeWizard::OnAddAction))
 		.OnEditAction(FOnEditAction::CreateRaw(this, &UtilityTreeWizard::OnEditAction))
+		.GetUnusedAction(FGetUnusedActionDetail::CreateRaw(this, &UtilityTreeWizard::GetUnusedAction))
 	];
 
 	this->mpContentPanel->AddSlot()
@@ -163,14 +173,23 @@ void UtilityTreeWizard::OnBlackboardAssetSelected(FAssetData const &asset)
 
 void UtilityTreeWizard::OnAddAction(TSharedRef<FUtilityActionDetails> action)
 {
-	this->mUtilityTreeDetails.mActions.Add(action);
-	
-	this->mpWidgetSwitcher->AddSlot()
-	[
-		SNew(SUtilityAction)
-		.BlackboardAsset(this->mUtilityTreeDetails.mpTree->BlackboardAsset)
-		.Value(TWeakPtr<FUtilityActionDetails>(action))
-	];	
+	if (action->mShouldGenerate)
+	{
+		this->mUtilityTreeDetails.mActions.Add(action);
+
+		this->mpWidgetSwitcher->AddSlot()
+		[
+			SNew(SUtilityAction)
+			.BlackboardAsset(this->mUtilityTreeDetails.mpTree->BlackboardAsset)
+			.Value(TWeakPtr<FUtilityActionDetails>(action))
+			.OnDelete(FSimpleDelegate::CreateRaw(this, &UtilityTreeWizard::SetActiveActionToFirstGenerating))
+		];
+	}
+	else
+	{
+		action->mShouldGenerate = true;
+		action->mOnChanged.ExecuteIfBound(TWeakPtr<FUtilityActionDetails>(action));
+	}
 
 	this->OnEditAction(action->mIndex);
 }
@@ -178,6 +197,19 @@ void UtilityTreeWizard::OnAddAction(TSharedRef<FUtilityActionDetails> action)
 void UtilityTreeWizard::OnEditAction(int32 index)
 {
 	this->mpWidgetSwitcher->SetActiveWidgetIndex(index);
+}
+
+void UtilityTreeWizard::SetActiveActionToFirstGenerating()
+{
+	for (auto action : this->mUtilityTreeDetails.mActions)
+	{
+		if (action->mShouldGenerate)
+		{
+			this->mpWidgetSwitcher->SetActiveWidgetIndex(action->mIndex);
+			return;
+		}
+	}
+	this->mpWidgetSwitcher->SetActiveWidgetIndex(INDEX_NONE);
 }
 
 // TAKEN FROM: SCurveEditor
@@ -241,6 +273,8 @@ void UtilityTreeWizard::GenerateNodes()
 	TArray<UBehaviorTreeGraphNode_Composite*> utilityActionNodes;
 	for (auto const action : actions)
 	{
+		if (!action->mShouldGenerate) continue;
+
 		FName const actionName = action->mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
 

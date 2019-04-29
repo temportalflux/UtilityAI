@@ -14,8 +14,6 @@
 class SUtilityAction
 	: public SCompoundWidget
 {
-	static const FText TextActionNameLabel;
-
 	TWeakPtr<FUtilityActionDetails> mpDetails;
 
 	int32 mIndex;
@@ -24,20 +22,25 @@ class SUtilityAction
 	TSharedPtr<SVerticalBox> mpActionInputsBox;
 	TMap<FGuid, TSharedPtr<SWidget>> mInputWidgets;
 
+	FSimpleDelegate mfOnDelete;
+
 	void OnNameCommitted(FText const &text, ETextCommit::Type commitType);
 	void AddInputField();
 	void RemoveInputField(FGuid const &id);
 	void OnInputValueCommitted(FGuid const &id, FUtilityActionInput const &data);
+	void OnPressedDelete();
 
 public:
 
 	SLATE_BEGIN_ARGS(SUtilityAction)
 		: _BlackboardAsset(nullptr)
 		, _Value(nullptr)
+		, _OnDelete()
 	{}
 
 		SLATE_ATTRIBUTE(TWeakPtr<FUtilityActionDetails>, Value)
 		SLATE_ATTRIBUTE(UBlackboardData*, BlackboardAsset)
+		SLATE_EVENT(FSimpleDelegate, OnDelete)
 
 	SLATE_END_ARGS()
 

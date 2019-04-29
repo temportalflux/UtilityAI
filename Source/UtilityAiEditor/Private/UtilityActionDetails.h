@@ -26,4 +26,5 @@ struct FUtilityActionDetails
 	FName mName;
 	TMap<FGuid, FUtilityActionInput> mInputs;
 	FOnActionChanged mOnChanged;
+	bool mShouldGenerate;
 };

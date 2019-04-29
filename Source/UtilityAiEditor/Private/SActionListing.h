@@ -7,6 +7,7 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 
 #include "Widgets/Text/STextBlock.h"
+#include "Widgets/SBoxPanel.h"
 
 #include "UtilityActionDetails.h"
 
@@ -16,6 +17,7 @@ class SActionListing
 	: public SCompoundWidget
 {
 private:
+	TSharedPtr<SHorizontalBox> mpContent;
 	TSharedPtr<STextBlock> mpNameLabel;
 	TSharedPtr<SWidget> mpButtonEdit;
 

@@ -38,7 +38,7 @@ public:
 	{}
 
 		SLATE_ATTRIBUTE(UBlackboardData*, BlackboardAsset)
-
+		SLATE_ATTRIBUTE(FText, Text)
 		SLATE_EVENT(FOnBlackboardEntryChanged, OnChanged)
 
 	SLATE_END_ARGS()

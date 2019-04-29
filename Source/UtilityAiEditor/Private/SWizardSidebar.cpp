@@ -11,6 +11,7 @@ void SWizardSidebar::Construct(const FArguments& InArgs)
 {
 	this->mOnAddAction = InArgs._OnAddAction;
 	this->mOnEditAction = InArgs._OnEditAction;
+	this->mfGetUnusedAction = InArgs._GetUnusedAction;
 
 	ChildSlot
 	[
@@ -63,21 +64,33 @@ void SWizardSidebar::Construct(const FArguments& InArgs)
 
 void SWizardSidebar::AddAction()
 {
-	TSharedRef<FUtilityActionDetails> action = MakeShared<FUtilityActionDetails>();
-	
-	action->mName = TEXT("Action ?");
-	action->mIndex = this->mpActionListingsPanel->GetChildren()->Num();
+	TSharedRef<FUtilityActionDetails> action =
+		this->mfGetUnusedAction.IsBound()
+		? this->mfGetUnusedAction.Execute()
+		: MakeShared<FUtilityActionDetails>();
 
-	this->mpActionListingsPanel->AddSlot()
-		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
-		.AutoHeight()
-	[
-		SNew(SActionListing)
-		.Action(TWeakPtr<FUtilityActionDetails>(action))
-		// Delegate from button requesting to open the edit panel
-		.OnEdit(mOnEditAction)
-	];
+	if (!this->mfGetUnusedAction.IsBound())
+	{
+		action->mIndex = this->mpActionListingsPanel->GetChildren()->Num();
+		action->mShouldGenerate = true;
+	}
+
+	action->mName = TEXT("Action");
+	action->mInputs.Empty();
+
+	if (action->mShouldGenerate)
+	{
+		this->mpActionListingsPanel->AddSlot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.AutoHeight()
+		[
+			SNew(SActionListing)
+			.Action(TWeakPtr<FUtilityActionDetails>(action))
+			// Delegate from button requesting to open the edit panel
+			.OnEdit(mOnEditAction)
+		];
+	}
 
 	this->mOnAddAction.ExecuteIfBound(action);
 }

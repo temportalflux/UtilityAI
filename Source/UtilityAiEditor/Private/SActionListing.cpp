@@ -2,7 +2,6 @@
 
 #include "UtilityAiEditor.h"
 
-#include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_SActionListing"
@@ -15,7 +14,7 @@ void SActionListing::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-		SNew(SHorizontalBox)
+		SAssignNew(mpContent, SHorizontalBox)
 
 		+SHorizontalBox::Slot()
 		.HAlign(HAlign_Fill)
@@ -39,17 +38,21 @@ void SActionListing::Construct(const FArguments& InArgs)
 
 	];
 
-	mpNameLabel->SetText(FString("Action ?"));
+	mpNameLabel->SetText(FString("Action"));
 }
 
 void SActionListing::OnClickedEdit()
 {
-	UE_LOG(LogUtilityAiEditor, Log, TEXT("Updating listing for editted action"));
 	this->mOnEdit.ExecuteIfBound(this->mpAction.Pin()->mIndex);
 }
 
 void SActionListing::OnActionChanged(TWeakPtr<FUtilityActionDetails> action)
 {
+	/*UE_LOG(LogUtilityAiEditor, Log, TEXT("Found change, updating action listing for %s, visible=%i"),
+		*action.Pin()->mName.ToString(),
+		action.Pin()->mShouldGenerate
+	);*/
+	this->mpContent->SetVisibility(this->mpAction.Pin()->mShouldGenerate ? EVisibility::Visible : EVisibility::Hidden);
 	mpNameLabel->SetText(action.Pin()->mName.ToString());
 }
 

@@ -29,6 +29,8 @@ private:
 
 	void OnAddAction(TSharedRef<FUtilityActionDetails> action);
 	void OnEditAction(int32 index);
+	TSharedRef<FUtilityActionDetails> GetUnusedAction();
+	void SetActiveActionToFirstGenerating();
 
 public:
 	UtilityTreeWizard() {}

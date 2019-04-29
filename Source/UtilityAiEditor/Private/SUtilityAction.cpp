@@ -8,12 +8,11 @@
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_SUtilityAction"
 
-const FText SUtilityAction::TextActionNameLabel = LOCTEXT("UtilityTreeWizard_CreateAction", "Action Name");
-
 void SUtilityAction::Construct(const FArguments& InArgs)
 {
 	this->mpDetails = InArgs._Value.Get();
 	this->mpBlackboard = InArgs._BlackboardAsset.Get();
+	this->mfOnDelete = InArgs._OnDelete;
 
 	this->mpDetails.Pin()->mName = FName(*FText::FormatNamed(
 		FText::FromString(TEXT("Action {index}")),
@@ -27,38 +26,83 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 
 			+SVerticalBox::Slot()
 			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Top)
+			.VAlign(VAlign_Fill)
 			.AutoHeight()
 			[
 				SNew(SHorizontalBox)
+
+					// Text "Name:"
 					+SHorizontalBox::Slot()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
 					.AutoWidth()
+					.Padding(5.0f)
 					[
-						SNew(STextBlock).Text(SUtilityAction::TextActionNameLabel)
+						SNew(STextBlock)
+						.Text(LOCTEXT("UtilityTreeWizard_ActionName", "Action Name"))
 					]
+
+					// User input action name
 					+SHorizontalBox::Slot()
-					.AutoWidth()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Fill)
+					.FillWidth(1.0f)
+					.Padding(5.0f)
 					[
 						SNew(SEditableTextBox)
 						.Text(FText::FromName(this->mpDetails.Pin()->mName))
 						.OnTextCommitted(FOnTextCommitted::CreateRaw(this, &SUtilityAction::OnNameCommitted))
 					]
+
+					// Text "Name:"
+					+ SHorizontalBox::Slot()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
+					.AutoWidth()
+					.Padding(5.0f)
+					[
+						SNew(SButton)
+						.Text(LOCTEXT("UtilityTreeWizard_ActionDelete", "Remove Action"))
+						.ButtonColorAndOpacity(FSlateColor(FLinearColor(0.8, 0, 0)))
+						.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityAction::OnPressedDelete))
+					]
 			]
-	
+
 			+SVerticalBox::Slot()
 			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Top)
+			.VAlign(VAlign_Fill)
 			.AutoHeight()
 			[
-				SNew(SButton)
-				.Text(LOCTEXT("AddEntry", "Create input"))
-				.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityAction::AddInputField))
+				SNew(SHorizontalBox)
+
+					+SHorizontalBox::Slot()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
+					.AutoWidth()
+					.Padding(5.0f)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("Inputs", "Inputs"))
+					]
+
+					+SHorizontalBox::Slot()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
+					.AutoWidth()
+					.Padding(5.0f)
+					[
+						SNew(SButton)
+						.Text(LOCTEXT("AddEntry", "+ Input"))
+						.OnPressed(FSimpleDelegate::CreateRaw(this, &SUtilityAction::AddInputField))
+					]
+
 			]
 
 			+SVerticalBox::Slot()
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Top)
 			.AutoHeight()
+			.Padding(20.0f, 0, 0, 0)
 			[
 				SAssignNew(mpActionInputsBox, SVerticalBox)
 			]
@@ -69,7 +113,6 @@ void SUtilityAction::Construct(const FArguments& InArgs)
 void SUtilityAction::OnNameCommitted(FText const &text, ETextCommit::Type commitType)
 {
 	if (!this->mpDetails.IsValid()) return;
-
 	this->mpDetails.Pin()->mName = FName(*text.ToString());
 	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
 }
@@ -114,6 +157,14 @@ void SUtilityAction::OnInputValueCommitted(FGuid const &id, FUtilityActionInput 
 	if (!this->mpDetails.IsValid()) return;
 	this->mpDetails.Pin()->mInputs[id] = data;
 	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
+}
+
+void SUtilityAction::OnPressedDelete()
+{
+	if (!this->mpDetails.IsValid()) return;
+	this->mpDetails.Pin()->mShouldGenerate = false;
+	this->mpDetails.Pin()->mOnChanged.ExecuteIfBound(mpDetails);
+	this->mfOnDelete.ExecuteIfBound();
 }
 
 #undef LOCTEXT_NAMESPACE
