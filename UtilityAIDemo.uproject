@@ -14,14 +14,6 @@
     {
       "Name": "UtilityAi",
       "Enabled": true
-    },
-    {
-      "Name": "ToolbarPlugin",
-      "Enabled": true
-    },
-    {
-      "Name": "WindowTest",
-      "Enabled": true
     }
   ]
 }
