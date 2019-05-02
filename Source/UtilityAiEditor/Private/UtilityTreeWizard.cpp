@@ -38,7 +38,7 @@
 
 #define LOCTEXT_NAMESPACE "UtilityAiEditor_UtilityAiWizard"
 
-//#define UTILITYAI_UPDATEDUE
+#define UTILITYAI_UPDATEDUE
 
 void OpenWindow(TSharedRef<SWindow> window)
 {
@@ -253,12 +253,10 @@ void UtilityTreeWizard::GenerateNodes()
 		FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
 		graphNode_selector = NodeBuilder.CreateNode();
 
-		graphNode_selector->NodePosX = 50;
-		graphNode_selector->NodePosY = 50;
-
-		auto utilityNode_selector = NewObject<UBTComposite_UtilitySelector>();
-		utilityNode_selector->NodeName = TEXT("Utility Action Selector");
-		graphNode_selector->NodeInstance = utilityNode_selector;
+		graphNode_selector->NodePosX = 300;
+		graphNode_selector->NodePosY = 100;
+		graphNode_selector->ClassData = FGraphNodeClassData(
+			UBTComposite_UtilitySelector::StaticClass(), FString("No Message"));
 
 		NodeBuilder.Finalize();
 	}
@@ -271,9 +269,12 @@ void UtilityTreeWizard::GenerateNodes()
 	//auto assetPackage = this->mUtilityTreeDetails.mpTree->GetOutermost();
 
 	TArray<UBehaviorTreeGraphNode_Composite*> utilityActionNodes;
+	int i = 0;
 	for (auto const action : actions)
 	{
 		if (!action->mShouldGenerate) continue;
+
+		i++;
 
 		FName const actionName = action->mName;
 		UE_LOG(LogUtilityAiEditor, Log, TEXT("Found action: %s"), *actionName.ToString());
@@ -282,13 +283,19 @@ void UtilityTreeWizard::GenerateNodes()
 		// Create the graph node
 		FGraphNodeCreator<UBehaviorTreeGraphNode_Composite> NodeBuilder(*graphEd);
 		auto graphNode_composite = NodeBuilder.CreateNode();
-		graphNode_composite->NodePosX = 50;
-		graphNode_composite->NodePosY = 50;
+		graphNode_composite->NodePosX = 300 + (i - actions.Num() / 2) * 150;
+		graphNode_composite->NodePosY = 300;
 		
 		// Create the utility action node instance
-		auto utilityNode_action = NewObject<UBTComposite_UtilityNode>();
-		utilityNode_action->NodeName = actionName.ToString();
+		graphNode_composite->ClassData = FGraphNodeClassData(
+			UBTComposite_UtilityNode::StaticClass(), FString("No Message"));
+		
+		// Update graph
+		NodeBuilder.Finalize();
 
+		auto utilityNode_action = Cast<UBTComposite_UtilityNode>(graphNode_composite->NodeInstance);
+
+		utilityNode_action->NodeName = actionName.ToString();
 		// Create the array of inputs for the action
 		utilityNode_action->Inputs.Empty();
 #endif
@@ -308,7 +315,11 @@ void UtilityTreeWizard::GenerateNodes()
 			actionInput.Key.SelectedKeyName = actionInputValue.mBlackboardKeyEntry.mName;
 
 			// Create the curve asset for the values in this input
-			FName curveAssetFileName = FName(*(this->mUtilityTreeDetails.mpTree->BlackboardAsset->GetName() + TEXT("_") + actionName.ToString()));
+			FName curveAssetFileName = FName(*(
+				this->mUtilityTreeDetails.mpTree->BlackboardAsset->GetName()
+				+ TEXT("_") + actionName.ToString()
+				+ TEXT("_") + actionInputValue.mBlackboardKeyEntry.mName.ToString()
+			));
 			const FString packageName = mPackageParent.ToString() + TEXT("/") + curveAssetFileName.ToString();
 			UPackage* assetPackage = CreatePackage(nullptr, *packageName);
 			
@@ -346,12 +357,10 @@ void UtilityTreeWizard::GenerateNodes()
 		}
 
 #ifdef UTILITYAI_UPDATEDUE
-		// Update graph
-		graphNode_composite->NodeInstance = utilityNode_action;
-		NodeBuilder.Finalize();
 		
 		// Link utility action node with its parent (the selector node)
-		graphNode_selector->AddSubNode(graphNode_composite, graphEd);
+		//graphNode_selector->AddSubNode(graphNode_composite, graphEd);
+		graphNode_selector->GetOutputPin()->MakeLinkTo(graphNode_composite->GetInputPin());
 #endif
 	}
 	

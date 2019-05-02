@@ -33,8 +33,8 @@ class SUtilityAction
 public:
 
 	SLATE_BEGIN_ARGS(SUtilityAction)
-		: _BlackboardAsset(nullptr)
-		, _Value(nullptr)
+		: _Value(nullptr)
+		, _BlackboardAsset(nullptr)
 		, _OnDelete()
 	{}
 

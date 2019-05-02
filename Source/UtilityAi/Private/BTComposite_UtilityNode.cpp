@@ -13,7 +13,7 @@ UBTComposite_UtilityNode::UBTComposite_UtilityNode(const FObjectInitializer& Obj
 	NodeName = "Utility Node";
 	bUseNodeActivationNotify = true;
 
-	OnNextChild.BindUObject(this, &UBTComposite_UtilityNode::GetNextChildHandler);
+	//OnNextChild.BindUObject(this, &UBTComposite_UtilityNode::GetNextChildHandler);
 }
 
 FString UBTComposite_UtilityNode::GetStaticDescription() const

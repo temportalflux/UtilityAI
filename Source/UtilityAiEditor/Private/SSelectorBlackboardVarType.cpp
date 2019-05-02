@@ -38,7 +38,6 @@ TSharedRef<SWidget> SSelectorBlackboardVarType::BuildSelectMenu()
 {
 	FClassViewerInitializationOptions Options;
 	Options.bShowUnloadedBlueprints = true;
-	Options.bShowDisplayNames = true;
 	Options.ClassFilter = MakeShareable(new FBlackboardEntryClassFilter);
 
 	return

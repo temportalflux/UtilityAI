@@ -9,7 +9,7 @@ UBTComposite_UtilitySelector::UBTComposite_UtilitySelector(const FObjectInitiali
 	NodeName = "Utility Selector";
 	bUseNodeActivationNotify = true;
 
-	OnNextChild.BindUObject(this, &UBTComposite_UtilitySelector::GetNextChildHandler);
+	//OnNextChild.BindUObject(this, &UBTComposite_UtilitySelector::GetNextChildHandler);
 }
 
 FString UBTComposite_UtilitySelector::GetStaticDescription() const
